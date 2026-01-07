@@ -1,0 +1,2292 @@
+- module: Public API Layer
+  description: Public interfaces for indexing, prompt tuning, and querying GraphRAG.
+    These define the library-facing API used by clients and other subsystems.
+  files:
+  - file: graphrag/api/__init__.py
+    docstring: ''
+    functions: []
+    classes: []
+  - file: graphrag/api/index.py
+    docstring: "\"\"\"Utilities to configure and run the GraphRag indexing pipeline.\n\
+      \nPurpose\n- Provide small helpers to determine the final indexing method and\
+      \ to execute the indexing workflow against a GraphRagConfig.\n\nExports\n- _get_method\n\
+      - build_index\n\nSummary\n- The module coordinates method resolution, logging\
+      \ initialization, callback chain creation, pipeline construction, and execution\
+      \ to return results for GraphRag indexing runs.\n\nFunctions\n- _get_method(method:\
+      \ IndexingMethod | str, is_update_run: bool) -> str\n  Args:\n    method: IndexingMethod\
+      \ | str\n      The indexing method. If an IndexingMethod is provided, its value\
+      \ is used; otherwise the string value is used directly.\n    is_update_run:\
+      \ bool\n      True if this is an update run; in which case the method name will\
+      \ be suffixed with \"-update\".\n  Returns:\n    str\n      The final method\
+      \ name to use for the indexing pipeline.\n\n- build_index(\n    config: GraphRagConfig,\n\
+      \    method: IndexingMethod | str = IndexingMethod.Standard,\n    is_update_run:\
+      \ bool = False,\n    memory_profile: bool = False,\n    callbacks: list[WorkflowCallbacks]\
+      \ | None = None,\n    additional_context: dict[str, Any] | None = None,\n  \
+      \  verbose: bool = False,\n    input_documents: pd.DataFrame | None = None,\n\
+      \  ) -> list[PipelineRunResult]\n  Args:\n    config: GraphRagConfig\n     \
+      \ The configuration for the GraphRag indexing run.\n    method: IndexingMethod\
+      \ | str\n      The indexing method to use, or its string value if a simple string\
+      \ is provided.\n    is_update_run: bool\n      True if this is an update run;\
+      \ the final method name will incorporate this.\n    memory_profile: bool\n \
+      \     Enable memory profiling during the run.\n    callbacks: list[WorkflowCallbacks]\
+      \ | None\n      Optional collection of workflow callbacks to wire into the run\
+      \ pipeline.\n    additional_context: dict[str, Any] | None\n      Additional\
+      \ contextual data to pass into the pipeline.\n    verbose: bool\n      Enable\
+      \ verbose logging/output.\n    input_documents: pd.DataFrame | None\n      Optional\
+      \ input documents to index instead of loading from a source.\n  Returns:\n \
+      \   list[PipelineRunResult]\n      The results of the indexing runs.\n\"\"\"\
+      \n}  >  None  // The final docstring content will be placed below as plain text.\
+      \ The system expects the actual docstring text here."
+    functions:
+    - _get_method
+    - build_index
+    classes: []
+  - file: graphrag/api/prompt_tune.py
+    docstring: "Utilities to generate indexing prompts for GraphRAG prompt tuning.\n\
+      \nThis module exposes a single public entry point, generate_indexing_prompts,\
+      \ which constructs indexing prompts by coordinating multiple prompt-generation\
+      \ components (domain content, entity types, entity relationships, community\
+      \ report prompts, and persona guidance) using configuration from graphrag_config_defaults\
+      \ and MAX_TOKEN_COUNT. It relies on the GraphRagConfig model and related utilities\
+      \ to tailor prompts for a given domain and language.\n\nKey exports\n- generate_indexing_prompts(config:\
+      \ GraphRagConfig, chunk_size: PositiveInt = graphrag_config_defaults.chunks.size,\
+      \ overlap: Annotated[int, annotated_types.Gt(-1)] = graphrag_config_defaults.chunks.overlap,\
+      \ limit: PositiveInt = 15, selection_method: DocSelectionType = DocSelectionType.RANDOM,\
+      \ domain: str | None = None, language: str | None = None, max_tokens: int =\
+      \ MAX_TOKEN_COUNT, discover_entity_types: bool = True, min_examples_required:\
+      \ PositiveInt = 2, n_subset_max: PositiveInt = 300, k: PositiveInt = 15, verbose:\
+      \ bool = False) -> tuple[str, str, str]\n  Generate indexing prompts. Parameters\
+      \ ---------- config: GraphRagConfig The GraphRag configuration. chunk_size:\
+      \ PositiveInt The chunk token size to use for input text units. overlap: Annotated[int,\
+      \ annotated_types.Gt(-1)] The number of tokens to overlap between consecutive\
+      \ chunks (must be greater than -1). limit: PositiveInt The limit of chunks to\
+      \ load. selection_method: DocSelectionType The method to select chunks. domain:\
+      \ str | None Optional domain to focus the prompts on. language: str | None Optional\
+      \ language to adapt prompts to. max_tokens: int Maximum token budget for prompts.\
+      \ discover_entity_types: bool Whether to generate prompts for discovering entity\
+      \ types. min_examples_required: PositiveInt Minimum number of examples per entity\
+      \ type. n_subset_max: PositiveInt Maximum number of prompt subsets. k: PositiveInt\
+      \ Number of examples or prompts to select per subset. verbose: bool Verbose\
+      \ logging.\n\nReturns: tuple[str, str, str] The three generated prompts used\
+      \ for indexing.\n\nRaises: pydantic.ValidationError if input arguments fail\
+      \ validation."
+    functions:
+    - generate_indexing_prompts
+    classes: []
+  - file: graphrag/api/query.py
+    docstring: 'Query interfaces for GraphRAG API.
+
+
+      This module provides high-level query functions to perform global, local, drift,
+      and basic searches, with both streaming and non-streaming variants. It coordinates
+      a graphrag configuration (GraphRagConfig), DataFrames for entities, communities,
+      community reports, text units, relationships, and covariates, and utilizes embedding
+      configurations and logging. It exposes a set of functions that return either
+      a full response plus context data or yield streaming chunks to be consumed asynchronously.
+      It also allows capturing and propagating context data through the on_context
+      helper.
+
+
+      Key exports:
+
+      - on_context
+
+      - global_search
+
+      - global_search_streaming
+
+      - multi_index_global_search
+
+      - basic_search
+
+      - basic_search_streaming
+
+      - multi_index_basic_search
+
+      - drift_search
+
+      - drift_search_streaming
+
+      - multi_index_drift_search
+
+      - local_search
+
+      - local_search_streaming
+
+      - multi_index_local_search'
+    functions:
+    - on_context
+    - global_search_streaming
+    - global_search
+    - multi_index_global_search
+    - basic_search
+    - basic_search_streaming
+    - drift_search
+    - drift_search_streaming
+    - local_search
+    - local_search_streaming
+    - multi_index_basic_search
+    - multi_index_drift_search
+    - multi_index_local_search
+    classes: []
+- module: GraphRAG Command-Line Interface
+  description: CLI entry points and tooling to run indexing, querying, and prompt
+    tuning workflows via uv/poethepoet.
+  files:
+  - file: graphrag/cli/__init__.py
+    docstring: ''
+    functions: []
+    classes: []
+  - file: graphrag/cli/main.py
+    docstring: 'Graphrag CLI main module
+
+
+      Purpose
+
+      This module provides the core Typer-based command implementations and helpers
+      used by Graphrag''s command-line interface. It wires together project initialization,
+      index construction and updates, knowledge-graph queries, and prompt tuning workflows,
+      while also exposing common path autocompletion and string-matching utilities.
+      The module relies on graphrag.config and graphrag.cli submodules to compose
+      a cohesive CLI experience and is intended to be used as part of a Typer-powered
+      command-line interface.
+
+
+      Exports
+
+      - _initialize_cli: Initialize a new Graphrag project at a given root, creating
+      defaults and configuration files. May raise ValueError if the project already
+      exists and the operation is not forced.
+
+      - _query_cli: Run a knowledge-graph query using a chosen method with optional
+      verbosity and output controls.
+
+      - _index_cli: Build a knowledge-graph index with configurable method and options,
+      including verbose and cache options.
+
+      - _prompt_tune_cli: Generate and tune prompts for a project based on configuration
+      and tuning parameters.
+
+      - _update_cli: Update an existing index, with optional output override.
+
+      - wildcard_match: Determine whether a string matches a wildcard pattern using
+      ? and *.
+
+      - path_autocomplete: Autocomplete file and directory paths with filtering options.
+
+      - completer: Return a list of possible directory item completions for autocompletion.
+
+      - INVALID_METHOD_ERROR: The error message displayed for an invalid method selection.
+
+      - CONFIG_AUTOCOMPLETE: Autocomplete helper for configuration file paths.
+
+      - ROOT_AUTOCOMPLETE: Autocomplete helper for project root paths.
+
+
+      Notes
+
+      - The module documents the public surface and runtime caveats such as import/export
+      inconsistencies. Detailed parameter and return information exists in each exported
+      function''s own docstring.
+
+
+      Usage
+
+      - The CLI is designed to be used via Typer command line apps. Each exported
+      function serves as a command handler or helper consumed by the surrounding Typer
+      app. For quickstart, inspect the help output for each command and its options,
+      or import the functions in Python to call them programmatically.
+
+
+      Example
+
+      - Initialize a project in Python:
+
+
+      from pathlib import Path
+
+      from graphrag.cli.main import _initialize_cli
+
+      _ = _initialize_cli(root=Path("/path/to/project"), force=True)
+
+
+      - Run a query in Python:
+
+
+      from pathlib import Path
+
+      from graphrag.cli.main import _query_cli
+
+      _ = _query_cli(method=None, query="example query", root=Path("/path/to/project"),
+      verbose=True)'
+    functions:
+    - wildcard_match
+    - path_autocomplete
+    - completer
+    - _initialize_cli
+    - _query_cli
+    - _index_cli
+    - _prompt_tune_cli
+    - _update_cli
+    classes: []
+  - file: graphrag/cli/index.py
+    docstring: "GraphRag CLI indexing utilities.\n\nThis module provides command-line\
+      \ interfaces to run the GraphRag indexing and update pipelines, integrating\
+      \ with the GraphRag API, console workflow callbacks, configuration loading and\
+      \ validation, redaction utilities, and logging. It also defines signal handling\
+      \ to enable graceful shutdown of asynchronous tasks.\n\nExports:\n  handle_signal(signum,\
+      \ _): Handle a system signal by cancelling all asyncio tasks and logging exit\
+      \ messages.\n  _register_signal_handlers(): Register signal handlers for graceful\
+      \ shutdown of the CLI. This function defines a signal handler that logs the\
+      \ received signal, cancels all asyncio tasks, and logs that all tasks have been\
+      \ cancelled. It registers the handler for SIGINT and, on non-Windows platforms,\
+      \ SIGHUP.\n  _run_index(config, method, is_update_run, verbose, memprofile,\
+      \ cache, dry_run, skip_validation): Run the indexing pipeline using the provided\
+      \ configuration.\n  index_cli(root_dir, method, verbose, memprofile, cache,\
+      \ config_filepath, dry_run, skip_validation, output_dir): Run the indexing pipeline\
+      \ with the given configuration. Parameters: root_dir (Path): The root directory\
+      \ of the project. Will search for the configuration file in this directory.\
+      \ method (IndexingMethod): The indexing method to use for this run. verbose\
+      \ (bool): Enable verbose logging/output. memprofile (bool): Enable memory profiling\
+      \ during execution. cache (bool): Whether to enable caching. dry_run (bool):\
+      \ If true, run without applying changes. skip_validation (bool): If true, skip\
+      \ configuration validation. output_dir (Path | None): Optional output directory\
+      \ override.\n  update_cli(root_dir, method, verbose, memprofile, cache, config_filepath,\
+      \ skip_validation, output_dir): Run the update pipeline with the given configuration.\
+      \ Similar to index_cli but for the update step."
+    functions:
+    - handle_signal
+    - _register_signal_handlers
+    - _run_index
+    - index_cli
+    - update_cli
+    classes: []
+  - file: graphrag/cli/initialize.py
+    docstring: 'GraphRag CLI initialization utilities.
+
+
+      Purpose:
+
+      Module that provides the CLI entry point functionality to initialize a GraphRag
+      project at a given filesystem path by creating initial configuration files and
+      preparing prompt templates.
+
+
+      Key exports:
+
+      - initialize_project_at(path: Path, force: bool) -> None: Initialize the project
+      at the given path.
+
+
+      Summary:
+
+      The module uses INIT_DOTENV and INIT_YAML to set up initial configuration and
+      references a suite of prompt templates to bootstrap components such as community
+      reports, claims extraction, graph extraction, summarization, and various search
+      system prompts.
+
+
+      Args:
+
+      - path: The path at which to initialize the project.
+
+      - force: Whether to force initialization even if the project already exists.
+
+
+      Returns:
+
+      None
+
+
+      Raises:
+
+      - ValueError: If the project already exists and force is False.'
+    functions:
+    - initialize_project_at
+    classes: []
+  - file: graphrag/cli/prompt_tune.py
+    docstring: "Asynchronous prompt tuning orchestration for the GraphRag CLI.\n\n\
+      Purpose\n- This module exposes the prompt_tune coroutine which coordinates configuration\
+      \ loading, chunking overrides, logging initialization, and indexing-prompt generation\
+      \ for prompt tuning.\n\nKey exports\n- prompt_tune(root: Path, config: Path\
+      \ | None, domain: str | None, verbose: bool, selection_method: api.DocSelectionType,\
+      \ limit: int, max_tokens: int, chunk_size: int, overlap: int, language: str\
+      \ | None, discover_entity_types: bool, output: Path, n_subset_max: int, k: int,\
+      \ min_examples_required: int) -> None\n  Coroutine that loads the configuration,\
+      \ applies any chunking overrides, initializes the root logger according to the\
+      \ verbose flag, and generates indexing prompts. It writes the resulting prompts\
+      \ to the specified output directory if an output path is provided; otherwise\
+      \ it logs an error and skips writing. Returns None upon successful completion.\n\
+      \nSummary\n- The module centralizes the prompt-tuning workflow by combining\
+      \ configuration loading, logging setup, chunking adjustments, and prompt generation\
+      \ into a single entry point exposed as prompt_tune for asynchronous invocation."
+    functions:
+    - prompt_tune
+    classes: []
+  - file: graphrag/cli/query.py
+    docstring: 'GraphRag CLI query module.
+
+
+      Overview:
+
+      This module provides the command-line interfaces to run GraphRag queries in
+      multiple modes
+
+      (global, local, drift, and basic) with optional streaming and integrated configuration
+      and
+
+      storage support. It wires together configuration loading, storage access, and
+      the GraphRag
+
+      API to execute queries and to resolve and load output data from storage.
+
+
+      Key exports:
+
+      - on_context(context: Any) -> None: Stores the given context in the enclosing
+      scope''s nonlocal variable context_data.
+
+      - run_streaming_search() -> tuple[str, dict[str, Any]]: Runs a streaming search
+      and collects the full response while printing streamed chunks.
+
+      - _resolve_output_files(config: GraphRagConfig, output_list: list[str], optional_list:
+      list[str] | None = None) -> dict[str, Any]: Reads indexing output files to a
+      dataframe dict.
+
+      - run_global_search(config_filepath: Path | None, data_dir: Path | None, root_dir:
+      Path, community_level: int | None, dynamic_community_selection: bool, response_type:
+      str, streaming: bool, query: str, verbose: bool): Perform a global search with
+      a given query.
+
+      - run_local_search(config_filepath: Path | None, data_dir: Path | None, root_dir:
+      Path, community_level: int, response_type: str, streaming: bool, query: str,
+      verbose: bool): Perform a local search with a given query.
+
+      - run_drift_search(config_filepath: Path | None, data_dir: Path | None, root_dir:
+      Path, community_level: int, response_type: str, streaming: bool, query: str,
+      verbose: bool): Perform a local drift search for a given query across either
+      a multi-index or single-index dataset.
+
+      - run_basic_search(config_filepath: Path | None, data_dir: Path | None, root_dir:
+      Path, streaming: bool, query: str, verbose: bool): Perform a basics search with
+      a given query.
+
+
+      Notes:
+
+      - This module relies on graphrag.api, storage utilities, and configuration loading
+      utilities.'
+    functions:
+    - on_context
+    - run_streaming_search
+    - _resolve_output_files
+    - run_global_search
+    - run_local_search
+    - run_drift_search
+    - run_basic_search
+    classes: []
+- module: Indexing Engine Core & Workflows
+  description: Core indexing pipeline, graph construction, embedding, and update workflows
+    that build and maintain the knowledge graph index.
+  files:
+  - file: graphrag/index/run/run_pipeline.py
+    docstring: "Utilities for running the GraphRag index run pipeline.\n\nThis module\
+      \ implements helpers to execute a GraphRag pipeline, persist run state,\nand\
+      \ copy outputs between storages. It exposes a public run_pipeline entry point\
+      \ and\nprivate helpers used internally by the run workflow.\n\nExports:\n- _dump_json(context:\
+      \ PipelineRunContext) -> None\n  Dumps the stats and context state to the storage.\n\
+      \n  Args:\n    context: PipelineRunContext The pipeline run context containing\
+      \ stats, state, and output storage used for persistence.\n\n  Returns:\n   \
+      \ None\n\n  Raises:\n    Exception If storage operations fail or JSON serialization\
+      \ fails.\n\n- _copy_previous_output(storage: PipelineStorage, copy_storage:\
+      \ PipelineStorage) -> None\n  Copy parquet outputs from the source storage to\
+      \ the copy storage asynchronously.\n\n  Args:\n    storage: PipelineStorage\
+      \ The source storage containing parquet outputs.\n    copy_storage: PipelineStorage\
+      \ The destination storage where outputs will be copied.\n\n  Returns:\n    None\n\
+      \n  Raises:\n    Exception If copy operations fail.\n\n- _run_pipeline(pipeline:\
+      \ Pipeline, config: GraphRagConfig, context: PipelineRunContext) -> AsyncIterable[PipelineRunResult]\n\
+      \  Execute the provided pipeline asynchronously and yield results for each workflow\
+      \ as it completes.\n\n  Args:\n    pipeline: Pipeline The pipeline to run\n\
+      \    config: GraphRagConfig Configuration for the run\n    context: PipelineRunContext\
+      \ Runtime context, including storage, callbacks, and state\n\n  Returns:\n \
+      \   AsyncIterable[PipelineRunResult] An async iterable that yields a PipelineRunResult\
+      \ for each workflow.\n\n  Raises:\n    Exception If the pipeline execution fails.\n\
+      \n- run_pipeline(pipeline: Pipeline, config: GraphRagConfig, callbacks: WorkflowCallbacks,\
+      \ is_update_run: bool = False, additional_context: dict[str, Any] | None = None,\
+      \ input_documents: pd.DataFrame | None = None) -> AsyncIterable[PipelineRunResult]\n\
+      \  Run all workflows using a simplified pipeline.\n\n  Args:\n    pipeline:\
+      \ Pipeline The pipeline to run.\n    config: GraphRagConfig The GraphRag configuration\
+      \ to use for the run.\n    callbacks: WorkflowCallbacks The callbacks to invoke\
+      \ during workflow execution.\n    is_update_run: bool Whether this run should\
+      \ perform an incremental update (default: False).\n    additional_context: dict[str,\
+      \ Any] | None Additional context to pass into the run.\n    input_documents:\
+      \ pd.DataFrame | None Optional input documents for the run.\n\n  Returns:\n\
+      \    AsyncIterable[PipelineRunResult] An async iterable that yields a PipelineRunResult\
+      \ for each workflow as it completes.\n\n  Raises:\n    Exception If the run\
+      \ fails."
+    functions:
+    - _dump_json
+    - _copy_previous_output
+    - _run_pipeline
+    - run_pipeline
+    classes: []
+  - file: graphrag/index/run/utils.py
+    docstring: "Utilities for running a GraphRAG pipeline by providing helpers to\
+      \ create a callback chain, assemble a run context, and derive update-related\
+      \ storage objects.\n\nKey exports\n- create_callback_chain(callbacks: list[WorkflowCallbacks]\
+      \ | None) -> WorkflowCallbacks\n- create_run_context(input_storage: PipelineStorage\
+      \ | None = None, output_storage: PipelineStorage | None = None, previous_storage:\
+      \ PipelineStorage | None = None, cache: PipelineCache | None = None, callbacks:\
+      \ WorkflowCallbacks | None = None, stats: PipelineRunStats | None = None, state:\
+      \ PipelineState | None = None) -> PipelineRunContext\n- get_update_storages(config:\
+      \ GraphRagConfig, timestamp: str) -> tuple[PipelineStorage, PipelineStorage,\
+      \ PipelineStorage]\n\nFunctions\ndef create_callback_chain(callbacks: list[WorkflowCallbacks]\
+      \ | None) -> WorkflowCallbacks\n  Create a callback manager that encompasses\
+      \ multiple callbacks.\n  Args:\n    callbacks: list[WorkflowCallbacks] | None.\
+      \ The callbacks to register on the manager. If None, an empty list is used.\n\
+      \  Returns:\n    WorkflowCallbacks: A manager that aggregates the provided callbacks.\n\
+      \  Raises:\n    Propagates exceptions raised by underlying components.\n\ndef\
+      \ create_run_context(\n  input_storage: PipelineStorage | None = None,\n  output_storage:\
+      \ PipelineStorage | None = None,\n  previous_storage: PipelineStorage | None\
+      \ = None,\n  cache: PipelineCache | None = None,\n  callbacks: WorkflowCallbacks\
+      \ | None = None,\n  stats: PipelineRunStats | None = None,\n  state: PipelineState\
+      \ | None = None,\n) -> PipelineRunContext\n  Create the run context for the\
+      \ pipeline.\n  Args:\n    input_storage: PipelineStorage | None The input storage\
+      \ to use for the run.\n    output_storage: PipelineStorage | None The output\
+      \ storage to use for the run.\n    previous_storage: PipelineStorage | None\
+      \ The previous storage to use for the run.\n    cache: PipelineCache | None\
+      \ The cache to use for the run.\n    callbacks: WorkflowCallbacks | None The\
+      \ callbacks to apply during the run.\n    stats: PipelineRunStats | None The\
+      \ stats collector for the run.\n    state: PipelineState | None The state for\
+      \ the run.\n  Returns:\n    PipelineRunContext: The run context for the pipeline.\n\
+      \  Raises:\n    Propagates exceptions from underlying components.\n\ndef get_update_storages(config:\
+      \ GraphRagConfig, timestamp: str) -> tuple[PipelineStorage, PipelineStorage,\
+      \ PipelineStorage]\n  Get storage objects for the update index run.\n  Args:\n\
+      \    config: GraphRagConfig The GraphRag configuration used to derive storages\
+      \ from.\n    timestamp: str The timestamp applied to the update storage to create\
+      \ a timestamped storage.\n  Returns:\n    tuple[PipelineStorage, PipelineStorage,\
+      \ PipelineStorage]: The output_storage, update_storage, and timestamped_storage.\n\
+      \  Raises:\n    Propagates exceptions from storage creation."
+    functions:
+    - create_callback_chain
+    - create_run_context
+    - get_update_storages
+    classes: []
+  - file: graphrag/index/workflows/factory.py
+    docstring: 'GraphRag workflows factory for building pipelines of workflow functions.
+
+
+      This module coordinates registration and construction of pipelines composed
+      of workflow functions for GraphRag-based indexing workflows. It maintains a
+      class-level registry of named WorkflowFunction callables and can assemble these
+      into reusable Pipeline objects that process GraphRag data.
+
+
+      Public API
+
+      - PipelineFactory: Class that coordinates registration and construction of pipelines
+      composed of workflow functions. Maintains a class-level registry of named WorkflowFunction
+      callables and can assemble these into Pipeline objects.
+
+      - register(cls, name: str, workflow: WorkflowFunction): Register a custom workflow
+      function.
+
+      - register_all(cls, workflows: dict[str, WorkflowFunction]): Register a dict
+      of custom workflow functions.
+
+      - create_pipeline(cls, config: GraphRagConfig, method: IndexingMethod | str
+      = IndexingMethod.Standard) -> Pipeline: Create a pipeline for executing a sequence
+      of workflows. Returns a Pipeline. Raises: KeyError if any workflow name is missing.
+
+      - register_pipeline(cls, name: str, workflows: list[str]): Register a new pipeline
+      method as a list of workflow names.'
+    functions:
+    - register
+    - register_all
+    - create_pipeline
+    - register_pipeline
+    classes:
+    - PipelineFactory
+  - file: graphrag/index/workflows/load_input_documents.py
+    docstring: "Load and manage input documents for the GraphRag index workflow.\n\
+      \nThis module provides functions to load input documents from configured sources,\
+      \ parse them into a standard pandas DataFrame, and persist them to storage as\
+      \ part of the GraphRag indexing workflow. The public API consists of load_input_documents\
+      \ and run_workflow. load_input_documents returns a DataFrame of the loaded inputs;\
+      \ run_workflow orchestrates loading and storage interactions, returning a WorkflowFunctionOutput\
+      \ that includes the loaded data.\n\nFunctions:\n  - load_input_documents(config:\
+      \ InputConfig, storage: PipelineStorage) -> pd.DataFrame\n  - run_workflow(config:\
+      \ GraphRagConfig, context: PipelineRunContext) -> WorkflowFunctionOutput\n\n\
+      load_input_documents:\n  - Args:\n      config: InputConfig containing input\
+      \ configuration (such as file_type and metadata) and storage base_dir information.\n\
+      \      storage: PipelineStorage used to access the input data.\n  - Returns:\n\
+      \      pandas DataFrame: The loaded input data as a DataFrame.\n  - Raises:\n\
+      \      Exceptions raised by loading/parsing inputs and storage interactions.\n\
+      \nrun_workflow:\n  - Args:\n      config: GraphRagConfig containing input configuration\
+      \ and related settings.\n      context: PipelineRunContext providing access\
+      \ to input_storage, output_storage, and runtime statistics.\n  - Returns:\n\
+      \      WorkflowFunctionOutput: The output containing the loaded input documents\
+      \ as a pandas DataFrame.\n  - Raises:\n      Exceptions raised during loading,\
+      \ writing to storage, or workflow execution."
+    functions:
+    - load_input_documents
+    - run_workflow
+    classes: []
+  - file: graphrag/index/workflows/update_text_embeddings.py
+    docstring: 'Module for updating text embeddings during incremental index runs.
+
+
+      This module defines the run_workflow function, which updates text embeddings
+      based on incremental updates from an index run and persists results to storage.
+      It leverages generate_text_embeddings and write_table_to_storage to perform
+      embedding generation and storage writes, coordinating with get_update_storages
+      and the run context.
+
+
+      Key exports:
+
+      - run_workflow
+
+
+      Args:
+
+      - config: GraphRagConfig containing configuration for embedding and storage
+      behavior.
+
+      - context: PipelineRunContext carrying the state for the run, including update_timestamp
+      and incremental update data.
+
+
+      Returns:
+
+      - WorkflowFunctionOutput: The outcome of the workflow function execution.
+
+
+      Raises:
+
+      - Exception: If an unexpected error occurs during embedding generation or storage
+      write.'
+    functions:
+    - run_workflow
+    classes: []
+  - file: graphrag/index/workflows/create_base_text_units.py
+    docstring: 'Module to generate base text units for GraphRAG indexing.
+
+
+      Purpose
+
+      This module provides utilities to convert input documents into base text units
+      by grouping texts, chunking them into smaller units, and applying optional metadata
+      preprocessing. It also exposes an entry point to run the workflow that loads
+      documents, chunks them, and writes the resulting text units back to storage.
+
+
+      Exports
+
+      - chunker(row: pd.Series) -> Any: Chunk a row into text chunks, optionally prepending
+      metadata to each chunk. Relies on outer-scope configuration such as prepend_metadata,
+      size, overlap, encoding_model, strategy, and callbacks.
+
+      - chunker_with_logging(row: pd.Series, row_index: int) -> Any: Log chunker progress
+      for a row during chunking. Executes the chunker on the given row and logs progress
+      using total_rows from the surrounding scope.
+
+      - create_base_text_units(documents: pd.DataFrame, callbacks: WorkflowCallbacks,
+      group_by_columns: list[str], size: int, overlap: int, encoding_model: str, strategy:
+      ChunkStrategyType, prepend_metadata: bool = False, chunk_size_includes_metadata:
+      bool = False) -> pd.DataFrame: Converts input documents into base text units
+      by grouping, chunking, and optional metadata preprocessing.
+
+      - run_workflow(config: GraphRagConfig, context: PipelineRunContext) -> WorkflowFunctionOutput:
+      Runs the base text units workflow to transform documents into base text units
+      by loading documents from storage, chunking them, and writing the resulting
+      text units back to storage.
+
+
+      Summary
+
+      This module coordinates chunking logic, encoding strategies, and storage utilities
+      to produce base text units ready for downstream GraphRAG processing.'
+    functions:
+    - chunker
+    - chunker_with_logging
+    - create_base_text_units
+    - run_workflow
+    classes: []
+  - file: graphrag/index/workflows/update_entities_relationships.py
+    docstring: "Utilities to update entities and relationships during incremental\
+      \ index runs in GraphRag.\n\nSummary:\nThis module defines two core functions\
+      \ that drive the incremental update of entities and relationships by merging\
+      \ previous state with delta updates, updating and merging relationships, applying\
+      \ summarization, and writing results to output storage. The functions are designed\
+      \ to be composed within a larger workflow pipeline and rely on storage, config,\
+      \ and callback mechanisms.\n\nExports:\n- _update_entities_and_relationships:\
+      \ Merges previous entities with delta, updates and merges relationships, applies\
+      \ summarization, and writes results to output storage.\n- run_workflow: Runs\
+      \ the incremental update workflow given a GraphRagConfig and PipelineRunContext,\
+      \ returning a WorkflowFunctionOutput. May raise KeyError.\n\nFunctions\n- _update_entities_and_relationships(\n\
+      \    previous_storage: PipelineStorage,\n    delta_storage: PipelineStorage,\n\
+      \    output_storage: PipelineStorage,\n    config: GraphRagConfig,\n    cache:\
+      \ PipelineCache,\n    callbacks: WorkflowCallbacks,\n  ) -> tuple[pd.DataFrame,\
+      \ pd.DataFrame, dict]\n  Args:\n    previous_storage: The storage containing\
+      \ the previous state data.\n    delta_storage: The storage containing the delta\
+      \ updates.\n    output_storage: The storage where results are written.\n   \
+      \ config: GraphRagConfig containing configuration for the workflow.\n    cache:\
+      \ PipelineCache used during processing.\n    callbacks: WorkflowCallbacks to\
+      \ handle workflow events.\n  Returns:\n    A tuple of (entities_df, relationships_df,\
+      \ summaries) representing the merged entities,\n    merged/updated relationships,\
+      \ and any summarization metadata.\n  Raises:\n    (not specified)\n\n- run_workflow(\n\
+      \    config: GraphRagConfig,\n    context: PipelineRunContext,\n  ) -> WorkflowFunctionOutput\n\
+      \  Args:\n    config: GraphRagConfig containing configuration for the workflow.\n\
+      \    context: PipelineRunContext carrying the state for the run, including update_timestamp.\n\
+      \  Returns:\n    WorkflowFunctionOutput: The output of the workflow function.\n\
+      \  Raises:\n    KeyError: if required keys are missing from the context or config."
+    functions:
+    - _update_entities_and_relationships
+    - run_workflow
+    classes: []
+  - file: graphrag/index/operations/create_graph.py
+    docstring: 'Utilities to construct NetworkX graphs from tabular data.
+
+
+      Purpose:
+
+      Provide a simple API to build a NetworkX Graph from a pandas DataFrame of edges
+      and an optional DataFrame of node attributes. The function supports optional
+      edge attributes and a node identifier column parameter.
+
+
+      Key exports:
+
+      - create_graph: Build a NetworkX Graph from edges and optional nodes DataFrames.
+
+
+      Summary:
+
+      This module defines create_graph(edges, edge_attr=None, nodes=None, node_id=''title'')
+      -> nx.Graph which returns a NetworkX graph constructed from the provided edges
+      and optional node attributes.'
+    functions:
+    - create_graph
+    classes: []
+  - file: graphrag/index/operations/embed_graph/embed_graph.py
+    docstring: 'Embed graphs into vector space using node2vec.
+
+
+      Purpose:
+
+      This module implements the graph embedding operation used by Graphrag. It exposes
+      the embed_graph function, which embeds a NetworkX graph into a mapping from
+      node names to embedding vectors using node2vec. The embedding configuration,
+      including dimensions, num_walks, walk_length, window_size, iterations, random_seed,
+      and use_lcc, is provided via EmbedGraphConfig.
+
+
+      Exports:
+
+      - embed_graph(graph: nx.Graph, config: EmbedGraphConfig) -> NodeEmbeddings
+
+
+      Summary:
+
+      The embed_graph function takes a graph and a configuration and returns a NodeEmbeddings
+      object that maps each node to its embedding vector. It delegates to embed_node2vec
+      and can utilize the stable_largest_connected_component utility when requested
+      by the config.'
+    functions:
+    - embed_graph
+    classes: []
+  - file: graphrag/index/operations/embed_graph/embed_node2vec.py
+    docstring: "Module for generating node embeddings from graphs using Node2Vec.\n\
+      \nPurpose:\nThis module exposes a single public function, embed_node2vec, which\
+      \ computes node embeddings\nfor NetworkX Graph or DiGraph objects using the\
+      \ Node2Vec algorithm. The resulting embeddings\nare suitable for downstream\
+      \ tasks such as node classification, link prediction, or clustering.\n\nKey\
+      \ exports:\n- embed_node2vec(graph, dimensions=1536, num_walks=10, walk_length=40,\
+      \ window_size=2, iterations=3, random_seed=86) -> NodeEmbeddings\n\nBrief summary:\n\
+      Given a graph, the function performs Node2Vec random walks and trains an embedding\
+      \ model to produce\na fixed-dimensional vector per node. The return value is\
+      \ a NodeEmbeddings object that stores the\nembedding vectors aligned with the\
+      \ graph's node order.\n\nNotes on NodeEmbeddings:\nNodeEmbeddings is a type\
+      \ alias defined elsewhere in this package that describes the embedding representation\n\
+      returned by embed_node2vec. The exact concrete type may be a 2D array-like structure\
+      \ or a mapping from\nnode identifiers to vectors; see the package type definitions\
+      \ for details. In all cases, the i-th embedding\ncorresponds to the i-th node\
+      \ yielded by graph.nodes().\n\nArgs:\n- graph: Graph or DiGraph on which to\
+      \ compute node embeddings.\n- dimensions: Embedding dimensionality (positive\
+      \ integer).\n- num_walks: Number of random walks to start at every node (positive\
+      \ integer).\n- walk_length: Length of each random walk (positive integer).\n\
+      - window_size: Window size parameter for the embedding model (positive integer).\n\
+      - iterations: Number of training iterations (non-negative integer).\n- random_seed:\
+      \ Seed for random number generation (integer).\n\nReturns:\n- NodeEmbeddings:\
+      \ Embeddings for each node in the input graph. Shape is (num_nodes, dimensions).\
+      \ The\n  order of embeddings matches graph.nodes() iteration order.\n\nRaises:\n\
+      - TypeError: If graph is not a NetworkX Graph or DiGraph.\n- ValueError: If\
+      \ any numeric parameter is invalid (e.g., dimensions <= 0, num_walks <= 0, walk_length\
+      \ <= 0,\n  window_size <= 0, iterations < 0) or if the graph contains no nodes.\n\
+      \nExample:\n>>> G = nx.path_graph(4)\n>>> embeddings = embed_node2vec(G, dimensions=64,\
+      \ random_seed=0)\n>>> embeddings.shape\n(4, 64)"
+    functions:
+    - embed_node2vec
+    classes: []
+  - file: graphrag/index/operations/compute_degree.py
+    docstring: "Compute the degree of each node in a NetworkX graph and return a pandas\
+      \ DataFrame.\n\nPurpose\nProvide a utility to compute node degrees from a Graph\
+      \ and present them in a tabular format for downstream processing.\n\nKey exports\n\
+      - compute_degree(graph: nx.Graph) -> pd.DataFrame: Creates a DataFrame with\
+      \ one row per node, containing the columns:\n  - title: the node identifier\n\
+      \  - degree: the degree of the node as an integer\n\nBrief summary\nGiven a\
+      \ NetworkX graph, compute_degree returns a DataFrame listing each node's identifier\
+      \ and its degree."
+    functions:
+    - compute_degree
+    classes: []
+  - file: graphrag/index/operations/prune_graph.py
+    docstring: "Prune graphs by filtering nodes and edges based on frequency, degree,\
+      \ and edge weights.\n\nThis module implements two primary utilities for pruning:\
+      \ _get_upper_threshold_by_std and prune_graph. The functions operate on networkx\
+      \ graphs and rely on numpy for statistics and graspologic for graph manipulation.\n\
+      \nFunctions\n_get_upper_threshold_by_std\n    Get upper threshold by standard\
+      \ deviation.\n    Args:\n        data: list[float] | list[int], a list of numeric\
+      \ values used to compute the threshold.\n        std_trim: float, multiplier\
+      \ for the standard deviation to offset the mean.\n    Returns:\n        float:\
+      \ The upper threshold computed as mean + std_trim * std of the data.\n\nprune_graph\n\
+      \    Prune graph by removing nodes that are out of frequency/degree ranges and\
+      \ edges with low weights.\n    Args:\n        graph: nx.Graph, The graph to\
+      \ prune.\n        min_node_freq: int, Minimum node frequency threshold; nodes\
+      \ with frequency below this value are removed.\n        max_node_freq_std: float\
+      \ | None, If provided, upper threshold is mean + max_node_freq_std * std of\
+      \ node frequencies; nodes with frequency above this threshold will be pruned.\n\
+      \        min_node_degree: int, Minimum node degree threshold; nodes with degree\
+      \ below this value are removed.\n        max_node_degree_std: float | None,\
+      \ If provided, upper threshold is mean + max_node_degree_std * std of node degrees;\
+      \ nodes with degree above this threshold will be pruned.\n        min_edge_weight_pct:\
+      \ float, Minimum edge weight percentage to retain; edges with weight below this\
+      \ threshold will be removed.\n        remove_ego_nodes: bool, If True, remove\
+      \ ego (isolated) nodes as part of pruning.\n        lcc_only: bool, If True,\
+      \ prune only within the largest connected component.\n    Returns:\n       \
+      \ nx.Graph: The pruned graph."
+    functions:
+    - _get_upper_threshold_by_std
+    - prune_graph
+    classes: []
+  - file: graphrag/index/validate_config.py
+    docstring: 'GraphRag configuration validation utility.
+
+
+      Purpose:
+
+      Provide pre-deployment runtime validation of the GraphRagConfig by performing
+      lightweight per-model checks to surface typos or misconfigurations in deployment
+      names.
+
+
+      Key exports:
+
+      - validate_config_names(parameters: GraphRagConfig) -> None: Validate the config
+      by issuing quick per-model test messages for each configured model to surface
+      invalid names.
+
+
+      Brief summary:
+
+      Exposes a single function that validates model deployment names through lightweight
+      test messages. On failure, validation may terminate the process (exit with status
+      1 via SystemExit) or raise an exception depending on runtime and environment.
+      A successful validation yields a None return.
+
+
+      Args:
+
+      - parameters: GraphRagConfig containing models to validate.
+
+
+      Returns:
+
+      - None
+
+
+      Raises:
+
+      - SystemExit: If validation fails and the runtime terminates the process.
+
+      - ValueError, TypeError, or other exceptions may be raised if inputs are invalid
+      or configurations are malformed.
+
+
+      Edge cases:
+
+      - Empty models list, missing deployment names, or unusual characters in model
+      names.'
+    functions:
+    - validate_config_names
+    classes: []
+  - file: graphrag/index/typing/state.py
+    docstring: ''
+    functions: []
+    classes: []
+  - file: graphrag/index/operations/snapshot_graphml.py
+    docstring: 'Snapshot GraphMLs of graphs to a storage backend.
+
+
+      Purpose
+
+      This module provides a single utility, snapshot_graphml, to persist GraphML
+      representations of graphs to a storage backend via PipelineStorage.
+
+
+      Exports
+
+      - snapshot_graphml(input: str | nx.Graph, name: str, storage: PipelineStorage)
+      -> None
+
+
+      Summary
+
+      The function accepts either a GraphML content string or a NetworkX Graph. If
+      input is a string, it is treated as GraphML content (not a file path). If input
+      is a Graph, it is converted to GraphML using NetworkX''s GraphML generator.
+      The resulting GraphML content is written to the provided storage backend under
+      the given name. The exact storage location (path, key, or identifier) is determined
+      by the storage backend implementation.
+
+
+      Behavior and errors
+
+      - Writes to the storage backend. The asynchronous vs. synchronous nature depends
+      on the storage backend''s API; this function completes when the write operation
+      finishes or raises an exception if it fails.
+
+      - Raises ValueError if input type is not supported (not a string or NetworkX
+      Graph).
+
+      - May raise exceptions propagated from the storage backend.
+
+
+      Dependencies
+
+      - networkx as nx
+
+      - graphrag.storage.pipeline_storage import PipelineStorage'
+    functions:
+    - snapshot_graphml
+    classes: []
+- module: Query Engine Core & Interfaces
+  description: Query-time context construction, data retrieval, and LLM orchestration
+    utilities used to answer questions against the knowledge graph.
+  files:
+  - file: graphrag/query/__init__.py
+    docstring: ''
+    functions: []
+    classes: []
+  - file: graphrag/query/context_builder/builders.py
+    docstring: 'Module for constructing DRIFT context used to prime downstream search
+      actions for a given query. This module defines an abstract interface and concrete
+      builders that assemble the context required by DRIFT-based search processes.
+      It relies on pandas for context representation (DataFrame) and on the ConversationHistory
+      type to optionally incorporate prior dialogue when building the context.
+
+
+      Public API
+
+      - DRIFTContextBuilder: Abstract base class defining the contract for building
+      the DRIFT context.
+
+      - BasicContextBuilder: Concrete implementation that builds the minimal context
+      for the basic search mode, combining the user query with optional conversation
+      history.
+
+      - GlobalContextBuilder: Concrete implementation that builds the context for
+      the global search mode.
+
+      - LocalContextBuilder: Abstract base class for building the local-context used
+      in local search mode.
+
+
+      Notes
+
+      - All build_context methods return a ContextBuilderResult, a structured result
+      type defined elsewhere in the codebase that encapsulates the built context (typically
+      including a DataFrame of items and any associated metrics).
+
+
+      Dependencies
+
+      - pandas (as pd)
+
+      - ConversationHistory (from graphrag.query.context_builder.conversation_history)'
+    functions:
+    - build_context
+    - build_context
+    - build_context
+    - build_context
+    classes:
+    - DRIFTContextBuilder
+    - BasicContextBuilder
+    - GlobalContextBuilder
+    - LocalContextBuilder
+  - file: graphrag/query/context_builder/local_context.py
+    docstring: 'Utilities for constructing context data for graph-based prompt systems.
+
+
+      Purpose:
+
+      This module provides helper functions to assemble context data tables (entities,
+      covariates, and relationships) into text blocks and structured DataFrames suitable
+      for inclusion in system prompts. It coordinates data extraction, token budgeting
+      (via a Tokenizer), and formatting to support prompt-based retrieval workflows.
+
+
+      Key exports:
+
+      - build_entity_context(selected_entities: list[Entity], tokenizer: Tokenizer
+      | None = None, max_context_tokens: int = 8000, include_entity_rank: bool = True,
+      rank_description: str = "number of relationships", column_delimiter: str = "|",
+      context_name: str = "Entities") -> tuple[str, pd.DataFrame]
+
+      - build_covariates_context(selected_entities: list[Entity], covariates: list[Covariate],
+      tokenizer: Tokenizer | None = None, max_context_tokens: int = 8000, column_delimiter:
+      str = "|", context_name: str = "Covariates") -> tuple[str, pd.DataFrame]
+
+      - get_candidate_context(selected_entities: list[Entity], entities: list[Entity],
+      relationships: list[Relationship], covariates: dict[str, list[Covariate]], include_entity_rank:
+      bool = True, entity_rank_description: str = "number of relationships", include_relationship_weight:
+      bool = False) -> dict[str, pd.DataFrame]
+
+      - _filter_relationships(selected_entities: list[Entity], relationships: list[Relationship],
+      top_k_relationships: int = 10, relationship_ranking_attribute: str = "rank")
+      -> list[Relationship]
+
+      - build_relationship_context(selected_entities: list[Entity], relationships:
+      list[Relationship], tokenizer: Tokenizer | None = None, include_relationship_weight:
+      bool = False, max_context_tokens: int = 8000, top_k_relationships: int = 10,
+      relationship_ranking_attribute: str = "rank", column_delimiter: str = "|", context_name:
+      str = "Relationships") -> tuple[str, pd.DataFrame]
+
+
+      Brief summary:
+
+      The module centralizes logic to build and constrain context data used by the
+      prompting system, enabling generation of narrative and tabular sections for
+      entities, covariates, and relationships while respecting token budgets.'
+    functions:
+    - build_entity_context
+    - build_covariates_context
+    - get_candidate_context
+    - _filter_relationships
+    - build_relationship_context
+    classes: []
+  - file: graphrag/query/context_builder/entity_extraction.py
+    docstring: 'Graphrag query context: entity extraction utilities for mapping user
+      queries to Entity objects using vector stores and a relationship graph.
+
+
+      Overview
+
+      This module provides utilities to extract entities from a user query and map
+      them to Entity objects within Graphrag''s query context. It defines an EntityVectorStoreKey
+      Enum to identify how entity vectors are stored in a vector store, and top-level
+      constants ID and TITLE for compatibility. The utilities rely on the Entity and
+      Relationship data models, an EmbeddingModel protocol, a BaseVectorStore interface,
+      and helper retrieval helpers (get_entity_by_id, get_entity_by_key, get_entity_by_name).
+
+
+      Exports
+
+      - EntityVectorStoreKey: Enum defining how entity vectors are addressed in a
+      vector store (ID and TITLE).
+
+      - ID: string constant for the "id" key.
+
+      - TITLE: string constant for the "title" key.
+
+      - from_string(value: str) -> EntityVectorStoreKey: convert a string key to the
+      corresponding enum member.
+
+      - find_nearest_neighbors_by_entity_rank(entity_name: str, all_entities: list[Entity],
+      all_relationships: list[Relationship], exclude_entity_names: list[str] | None
+      = None, k: int | None = 10) -> list[Entity]: retrieve entities directly connected
+      to the target entity, ranked, with optional exclusions.
+
+      - map_query_to_entities(query: str, text_embedding_vectorstore: BaseVectorStore,
+      text_embedder: EmbeddingModel, all_entities_dict: dict[str, Entity], embedding_vectorstore_key:
+      str = EntityVectorStoreKey.ID, include_entity_names: list[str] | None = None,
+      exclude_entity_names: list[str] | None = None, k: int = 10, oversample_scaler:
+      int = 2) -> list[Entity]: obtain entities matching a query via semantic similarity
+      with optional inclusion/exclusion filters and oversampling.
+
+
+      Key concepts
+
+      - EntityVectorStoreKey Enum vs top-level ID/TITLE constants: the enum provides
+      a programmatic way to reference the vector key, while the ID and TITLE constants
+      offer straightforward string values for external usage. Use embedding_vectorstore_key
+      to select which field to search against in the vector store.
+
+      - Edge cases: an empty query may return top-ranked entities by rank; exclusion
+      lists remove specified names from results; include lists restrict results to
+      a subset; oversample_scaler controls candidate expansion for robustness. Functions
+      raise appropriate exceptions for invalid inputs (e.g., invalid keys, non-positive
+      k or oversample values).
+
+
+      Usage example
+
+      - Convert a key string to enum: from_string("id") -> EntityVectorStoreKey.ID.
+
+      - Find neighbors: find_nearest_neighbors_by_entity_rank("Invoice", all_entities,
+      all_relationships, k=5).
+
+      - Map a query to entities: map_query_to_entities("find all related products",
+      vectorstore, embedder, entities_by_id, embedding_vectorstore_key=EntityVectorStoreKey.TITLE,
+      k=8).'
+    functions:
+    - from_string
+    - find_nearest_neighbors_by_entity_rank
+    - map_query_to_entities
+    classes:
+    - EntityVectorStoreKey
+  - file: graphrag/query/structured_search/global_search/search.py
+    docstring: "Module implementing a structured global search workflow that orchestrates\
+      \ parallel batches of community report summaries, maps each batch to an answer,\
+      \ and reduces the results into a final user-facing response using a language\
+      \ model. This module exposes the GlobalSearch class, which coordinates initialization,\
+      \ parallel querying, and optional streaming of results. It is designed to be\
+      \ configurable via prompts, behavior flags, and LLM parameters, and it relies\
+      \ on supporting components such as a GlobalContextBuilder and a Tokenizer.\n\
+      \nPublic API overview\n- GlobalSearch: Primary orchestrator class that coordinates\
+      \ the end-to-end structured global search. Public surface includes initialization\
+      \ (__init__), batch-based search (search), and streaming search (stream_search).\n\
+      \nKey components and flow\n- GlobalContextBuilder: Builds per-batch contextual\
+      \ data used by the language model to generate batch-level answers.\n- Tokenizer:\
+      \ Optional utility for text handling and length management.\n- Prompts: Default\
+      \ system prompts for mapping, knowledge integration, and reduction are exposed\
+      \ as configurable defaults and may be overridden via constructor arguments (MAP_SYSTEM_PROMPT,\
+      \ GENERAL_KNOWLEDGE_INSTRUCTION, REDUCE_SYSTEM_PROMPT, NO_DATA_ANSWER).\n- Mapping,\
+      \ reducing, and parsing helpers (private methods) implement the three-stage\
+      \ pipeline:\n  - _map_response_single_batch: Generate an answer for a single\
+      \ chunk/batch of community reports.\n  - _stream_reduce_response: Stream and\
+      \ reduce multiple map results into a single output by ranking key points and\
+      \ interacting with the LLM.\n  - _reduce_response: Combine per-batch results\
+      \ into a final answer for non-streaming scenarios.\n  - _parse_search_response:\
+      \ Parse a JSON-formatted response to extract structured key points.\n\nInputs\
+      \ and outputs\n- __init__(model, context_builder, tokenizer=None, map_system_prompt=None,\
+      \ reduce_system_prompt=None, response_type=\"multiple paragraphs\", allow_general_knowledge=False,\
+      \ general_knowledge_inclusion_prompt=None, json_mode=True, callbacks=None, max_data_tokens=8000,\
+      \ map_llm_params=None, reduce_llm_params=None, map_max_length=1000, reduce_max_length=2000,\
+      \ context_builder_params=None, concurrent_coroutines=32):\n  Initializes a GlobalSearch\
+      \ instance with the language model, context builder, optional tokenizer, and\
+      \ various behavior/customization options. May raise underlying component exceptions\
+      \ as they occur during setup.\n- search(query, conversation_history=None, **kwargs)\
+      \ -> SearchResult:\n  Perform a complete, non-streaming global search for the\
+      \ given query. Returns a SearchResult containing the final answer and associated\
+      \ metadata. Can raise exceptions from LLM calls or context construction.\n-\
+      \ stream_search(query, conversation_history=None) -> AsyncGenerator[str, None]:\n\
+      \  Stream the final answer as fragments. The generator yields string fragments\
+      \ representing streaming portions of the final response.\n- Internal helpers\
+      \ (not part of public API): _map_response_single_batch, _stream_reduce_response,\
+      \ _reduce_response, _parse_search_response. These are used to implement the\
+      \ mapping, reduction, and parsing steps of the pipeline and are subject to change\
+      \ without breaking the public interface.\n\nBehavior notes\n- Streaming vs batch\
+      \ processing: stream_search yields incremental fragments during reduction, while\
+      \ search collects and returns a complete final result. The class supports parallel\
+      \ batch evaluation with a configurable level of concurrency via concurrent_coroutines.\n\
+      - Error handling: callers should expect exceptions from the underlying components\
+      \ (ChatModel, GlobalContextBuilder, Tokenizer, JSON parsing, etc.). The module\
+      \ does not obscure or swallow these errors; wrap or translate them as needed\
+      \ for your application.\n\nExports\n- GlobalSearch: The main orchestrator class\
+      \ for the structured global search workflow, with a focus on parallel batch\
+      \ querying, optional streaming, and final reduction of results."
+    functions:
+    - __init__
+    - search
+    - _map_response_single_batch
+    - _stream_reduce_response
+    - stream_search
+    - _reduce_response
+    - _parse_search_response
+    classes:
+    - GlobalSearch
+  - file: graphrag/query/llm/text_utils.py
+    docstring: "Utilities for batching, JSON cleaning/parsing, and token-based text\
+      \ chunking to support LLM workflows.\n\nThis module provides helpers to:\n-\
+      \ batch data into fixed-size chunks for batched LLM prompts or processing (batched)\n\
+      - repair and parse JSON-like content produced by language models into native\
+      \ Python objects (try_parse_json_object)\n- split large text into pieces that\
+      \ respect a maximum token budget, using a tokenizer (chunk_text)\n\nDependencies\
+      \ and defaults:\n- A default tokenizer can be created via get_tokenizer using\
+      \ the encoding model defined in graphrag.config.defaults as ENCODING_MODEL.\
+      \ If a tokenizer is not supplied to chunk_text, one is created using that model.\n\
+      \nExported functions:\n- batched(iterable, n)\n- try_parse_json_object(input,\
+      \ verbose=True)\n- chunk_text(text, max_tokens, tokenizer=None)\n\nbatched\n\
+      Args:\n- iterable (Iterator): The input sequence to batch.\n- n (int): Batch\
+      \ size; must be at least 1.\nReturns:\n- Iterator[tuple]: Batches as tuples\
+      \ of length n; the final batch may be shorter.\nRaises:\n- ValueError: If n\
+      \ < 1.\n\ntry_parse_json_object\nArgs:\n- input (str): Raw string that may contain\
+      \ JSON or JSON-like content.\n- verbose (bool): If True, log warnings/exceptions\
+      \ encountered during parsing.\nReturns:\n- tuple[str, dict]: The (potentially\
+      \ cleaned) input string and the parsed JSON object as a dict.\n  If parsing\
+      \ is not recoverable, the dict will be empty and the input string will reflect\
+      \ any repairs.\n\nNotes:\n- The function repairs JSON-like content using repair_json\
+      \ before attempting to parse with json.loads.\n- No exception is raised to the\
+      \ caller; on failure, an empty dict is returned (when applicable).\n\nchunk_text\n\
+      Args:\n- text (str): The input text to chunk.\n- max_tokens (int): Maximum tokens\
+      \ per chunk.\n- tokenizer (Tokenizer | None): Tokenizer to use for encoding/decoding.\
+      \ If None, a default tokenizer is created via get_tokenizer(encoding_model=defs.ENCODING_MODEL).\n\
+      Returns:\n- Iterator[str]: An iterator that yields chunk strings decoded from\
+      \ token sequences, each not exceeding max_tokens.\n\nNotes:\n- The default tokenizer\
+      \ selection is performed by obtaining a Tokenizer for the encoding model defined\
+      \ in defs.ENCODING_MODEL when tokenizer=None."
+    functions:
+    - batched
+    - try_parse_json_object
+    - chunk_text
+    classes: []
+  - file: graphrag/prompts/query/global_search_knowledge_system_prompt.py
+    docstring: ''
+    functions: []
+    classes: []
+  - file: graphrag/prompts/query/local_search_system_prompt.py
+    docstring: ''
+    functions: []
+    classes: []
+  - file: graphrag/prompts/query/question_gen_system_prompt.py
+    docstring: ''
+    functions: []
+    classes: []
+- module: Knowledge Graph Data Model
+  description: Core data structures and schemas that represent documents, entities,
+    relationships, communities, and associated metadata in the knowledge graph.
+  files:
+  - file: graphrag/data_model/document.py
+    docstring: 'Data model and factory for GraphRag Document.
+
+
+      Purpose:
+
+      Provide a dataclass-based model for a GraphRag Document and a factory to build
+      it from a dictionary with configurable key mappings.
+
+
+      Exports:
+
+      - Document: Dataclass representing a document with fields such as id, human_readable_id,
+      title, type, text, text_units, and attributes.
+
+      - Document.from_dict: Classmethod to construct a Document from a dictionary
+      using key mappings.
+
+
+      Summary:
+
+      The Document class encapsulates identifiers, metadata, and content for a document
+      and supports construction from a dictionary, enabling flexible deserialization
+      from diverse input shapes.'
+    functions:
+    - from_dict
+    classes:
+    - Document
+  - file: graphrag/data_model/entity.py
+    docstring: 'GraphRag Entity data model.
+
+
+      Purpose
+
+      Defines the Entity data model used to represent a graph entity in the GraphRag
+      data model. It includes the Entity class and a from_dict classmethod to deserialize
+      an Entity from a dictionary with configurable key mappings for identifiers,
+      metadata, embeddings, and related data.
+
+
+      Exports
+
+      - Entity: The data model class representing a graph entity with identifying
+      information, metadata, embeddings, and relationships to related data such as
+      text units and communities.
+
+      - Entity.from_dict: Classmethod to construct an Entity instance from a dictionary
+      using configurable key names for id, short_id, title, type, description, description_embedding,
+      name_embedding, community, text_unit_ids, degree, and attributes.
+
+
+      Summary
+
+      The Entity class encapsulates the essential identifiers and descriptive metadata
+      for a graph entity, and from_dict provides a flexible deserialization path from
+      dictionaries.'
+    functions:
+    - from_dict
+    classes:
+    - Entity
+  - file: graphrag/data_model/relationship.py
+    docstring: "Relationship data model for graph relationships.\n\nPurpose\nDefine\
+      \ the Relationship dataclass and provide a dictionary-based constructor to instantiate\
+      \ it from data commonly obtained from external sources.\n\nPublic API\n- Relationship:\
+      \ Dataclass representing a relationship between two entities in the graph data\
+      \ model. It captures identifiers, source and target references, optional descriptive\
+      \ text, ranking and weight, related text units, and arbitrary attributes.\n\n\
+      - Relationship.from_dict(cls, d, id_key='id', short_id_key='human_readable_id',\
+      \ source_key='source', target_key='target', description_key='description', rank_key='rank',\
+      \ weight_key='weight', text_unit_ids_key='text_unit_ids', attributes_key='attributes')\
+      \ -> 'Relationship'\n  Creates a new Relationship from the dictionary data.\n\
+      \nArgs\n- cls (type): The class.\n- d (dict[str, Any]): The source dictionary\
+      \ containing the values for the Relationship fields.\n- id_key (str): Key in\
+      \ d for the relationship's identifier. Defaults to \"id\".\n- short_id_key (str):\
+      \ Key in d for the optional short identifier. Defaults to \"human_readable_id\"\
+      .\n- source_key (str): Key in d for the source reference.\n- target_key (str):\
+      \ Key in d for the target reference.\n- description_key (str): Key in d for\
+      \ the description.\n- rank_key (str): Key in d for the rank.\n- weight_key (str):\
+      \ Key in d for the weight.\n- text_unit_ids_key (str): Key in d for text_unit_ids.\n\
+      - attributes_key (str): Key in d for attributes.\n\nReturns\n- 'Relationship':\
+      \ The Relationship instance created from the dictionary data.\n\nRaises\n- May\
+      \ raise exceptions if the input data is invalid or keys are missing or of unexpected\
+      \ types."
+    functions:
+    - from_dict
+    classes:
+    - Relationship
+  - file: graphrag/data_model/community.py
+    docstring: 'Module providing the Community data model for graphrag.
+
+
+      This module defines the Community dataclass, which represents a Community in
+      the graph data model and extends Named to provide identity and naming semantics,
+      as well as community-specific metadata and relationships. It encapsulates identity,
+      hierarchical placement, and associations to entities, relationships, text units,
+      and covariates.
+
+
+      Exports:
+
+      - Community: Dataclass representing a Community, subclassing Named.
+
+      - from_dict: Classmethod to create a Community from a dictionary, with configurable
+      keys (id_key, title_key, short_id_key, level_key, entities_key, relationships_key,
+      text_units_key, covariates_key, parent_key, children_key, attributes_key, size_key,
+      period_key).'
+    functions:
+    - from_dict
+    classes:
+    - Community
+  - file: graphrag/data_model/community_report.py
+    docstring: 'Community report data model for Graphrag.
+
+
+      This module defines a dataclass-based model representing a community report,
+      storing identifiers, metadata, and content for a specific community. The CommunityReport
+      class inherits from Named and offers a convenient from_dict constructor for
+      building instances from dictionaries.
+
+
+      Exports:
+
+      - CommunityReport: Dataclass-based model representing a community report; inherits
+      from Named.
+
+      - from_dict: Classmethod that creates a CommunityReport instance from a dictionary,
+      with configurable dictionary keys.
+
+
+      Args:
+
+      - cls: The class.
+
+      - d: The source dictionary containing the values for the CommunityReport fields.
+
+      - id_key: Key in d for the report''s identifier. Defaults to "id".
+
+      - title_key: Key in d for the report title. Defaults to "title".
+
+      - community_id_key: Key in d for the associated community''s id. Defaults to
+      "community".
+
+      - short_id_key: Key in d for the human-readable identifier. Defaults to "human_readable_id".
+
+      - summary_key: Key in d for the summary. Defaults to "summary".
+
+      - full_content_key: Key in d for the full content. Defaults to "full_content".
+
+      - rank_key: Key in d for the rank. Defaults to "rank".
+
+      - attributes_key: Key in d for the attributes. Defaults to "attributes".
+
+      - size_key: Key in d for the size. Defaults to "size".
+
+      - period_key: Key in d for the period. Defaults to "period".
+
+
+      Returns:
+
+      - CommunityReport: The constructed CommunityReport instance.
+
+
+      Raises:
+
+      - None documented.
+
+
+      Summary:
+
+      The module centralizes the data model for a community report and exposes a simple
+      API to instantiate it from a dictionary.'
+    functions:
+    - from_dict
+    classes:
+    - CommunityReport
+  - file: graphrag/data_model/text_unit.py
+    docstring: "Text unit data model for graph-based text data handling.\n\nThis module\
+      \ defines the TextUnit data model, which encapsulates a unit of text and its\
+      \ metadata for graph-based data handling, including identifiers linking it to\
+      \ entities, relationships, covariates, and related documents. It inherits from\
+      \ Identified to provide a stable, unique identifier for the text unit.\n\nPublic\
+      \ exports:\n- TextUnit: Data model class representing a unit of text and its\
+      \ metadata.\n- TextUnit.from_dict: Classmethod to construct a TextUnit from\
+      \ a dictionary.\n\nSummary:\n- TextUnit stores the text content together with\
+      \ identifiers linking it to entities, relationships, covariates, and related\
+      \ documents.\n- The module supports constructing TextUnit instances from dictionary\
+      \ data via from_dict.\n\nClasses:\n- TextUnit: Data model for a unit of text\
+      \ and its metadata.\n\nFunctions:\n- TextUnit.from_dict(cls, d: dict[str, Any],\
+      \ id_key: str = \"id\", short_id_key: str = \"human_readable_id\", text_key:\
+      \ str = \"text\", entities_key: str = \"entity_ids\", relationships_key: str\
+      \ = \"relationship_ids\", covariates_key: str = \"covariate_ids\", n_tokens_key:\
+      \ str = \"n_tokens\", document_ids_key: str = \"document_ids\", attributes_key:\
+      \ str = \"attributes\") -> \"TextUnit\": Create a new TextUnit from the dict\
+      \ data.\n  Args:\n    cls: The class.\n    d (dict[str, Any]): The source dictionary\
+      \ containing the values for the TextUnit fields.\n    id_key (str): Key in d\
+      \ for the text unit's identifier. Defaults to \"id\".\n    short_id_key (str):\
+      \ Key in d for the optional short identifier. Defaults to \"human_readable_id\"\
+      .\n    text_key (str): Key in d for the text content. Defaults to \"text\".\n\
+      \    entities_key (str): Key in d for the associated entity identifiers. Defaults\
+      \ to \"entity_ids\".\n    relationships_key (str): Key in d for the related\
+      \ relationship identifiers. Defaults to \"relationship_ids\".\n    covariates_key\
+      \ (str): Key in d for the associated covariate identifiers. Defaults to \"covariate_ids\"\
+      .\n    n_tokens_key (str): Key in d for the number of tokens. Defaults to \"\
+      n_tokens\".\n    document_ids_key (str): Key in d for related document identifiers.\
+      \ Defaults to \"document_ids\".\n    attributes_key (str): Key in d for additional\
+      \ attributes. Defaults to \"attributes\".\n  Returns:\n    TextUnit: New TextUnit\
+      \ instance constructed from the provided data.\n  Raises:\n    (Depending on\
+      \ input) ValueError, KeyError, or TypeError if the input data are invalid or\
+      \ incomplete."
+    functions:
+    - from_dict
+    classes:
+    - TextUnit
+  - file: graphrag/data_model/schemas.py
+    docstring: ''
+    functions: []
+    classes: []
+  - file: graphrag/data_model/types.py
+    docstring: ''
+    functions: []
+    classes: []
+- module: AI Orchestration & LLM Providers
+  description: Abstractions and backends for language models, tokenization, and LLM
+    service management used across indexing and querying.
+  files:
+  - file: graphrag/language_model/__init__.py
+    docstring: ''
+    functions: []
+    classes: []
+  - file: graphrag/language_model/factory.py
+    docstring: 'Registry-based factory for creating chat and embedding language model
+      backends.
+
+
+      Purpose
+
+      - Maintains registries for embedding and chat model implementations and provides
+      a uniform API to register model backends and instantiate models by type.
+
+
+      Key exports
+
+      - ModelFactory: A class that implements the registries and factory methods to
+      register, query, and instantiate models.
+
+
+      Summary
+
+      - ModelFactory maintains _embedding_registry and _chat_registry mappings from
+      model type identifiers to creator callables for EmbeddingModel and ChatModel.
+      It exposes methods to register embedding and chat backends, get the lists of
+      registered model names, check support for a model type, and create model instances
+      by type.'
+    functions:
+    - register_embedding
+    - get_embedding_models
+    - create_chat_model
+    - is_supported_model
+    - is_supported_chat_model
+    - create_embedding_model
+    - is_supported_embedding_model
+    - get_chat_models
+    - register_chat
+    classes:
+    - ModelFactory
+  - file: graphrag/language_model/manager.py
+    docstring: "Module for managing chat and embedding language model instances via\
+      \ a singleton ModelManager.\n\nOverview:\nThe ModelManager singleton provides\
+      \ on-demand creation, registration, retrieval, and listing of ChatModel and\
+      \ EmbeddingModel instances. It delegates instantiation to ModelFactory and stores\
+      \ instances in internal registries for reuse.\n\nExports:\n  - ModelManager:\
+      \ Singleton manager class responsible for creating, registering, retrieving,\
+      \ and listing ChatModel and EmbeddingModel instances. It exposes methods such\
+      \ as get_or_create_chat_model, list_chat_models, remove_chat, list_embedding_models,\
+      \ get_chat_model, get_or_create_embedding_model, get_instance, register_embedding,\
+      \ and register_chat.\n\nSummary:\nThis module centralizes access to chat-based\
+      \ and embedding-based language models, ensuring a single source of truth for\
+      \ model registrations and lookups throughout the application."
+    functions:
+    - get_or_create_chat_model
+    - list_chat_models
+    - remove_chat
+    - list_embedding_models
+    - get_chat_model
+    - get_or_create_embedding_model
+    - get_instance
+    - register_embedding
+    - __new__
+    - register_chat
+    - __init__
+    - remove_embedding
+    - get_embedding_model
+    classes:
+    - ModelManager
+  - file: graphrag/language_model/providers/fnllm/models.py
+    docstring: 'FNLLM-based language model providers for Graphrag.
+
+
+      This module implements concrete providers for embeddings and chat using FNLLM''s
+      OpenAI and Azure OpenAI interfaces. It wires FNLLM clients to Graphrag''s language-model
+      framework, deriving configuration from LanguageModelConfig and integrating with
+      Graphrag''s caching (PipelineCache), event handling, and error utilities. The
+      providers support synchronous and asynchronous operations, including streaming
+      variants, and can be wrapped with optional WorkflowCallbacks.
+
+
+      Key exports:
+
+      - OpenAIEmbeddingFNLLM: Embedding FNLLM provider for OpenAI embeddings
+
+      - OpenAIChatFNLLM: Chat FNLLM provider for OpenAI chat
+
+      - AzureOpenAIEmbeddingFNLLM: Embedding FNLLM provider for Azure OpenAI embeddings
+
+      - AzureOpenAIChatFNLLM: Chat FNLLM provider for Azure OpenAI chat
+
+
+      Brief summary:
+
+      Offers embedding and chat providers backed by FNLLM LLMs, exposing synchronous,
+      asynchronous, and streaming interfaces that integrate with Graphrag''s configuration,
+      caching, and workflow systems.'
+    functions:
+    - aembed_batch
+    - chat_stream
+    - aembed
+    - achat
+    - achat
+    - achat_stream
+    - aembed_batch
+    - achat_stream
+    - aembed
+    - chat_stream
+    - chat
+    - embed_batch
+    - embed
+    - chat
+    - embed_batch
+    - embed
+    - __init__
+    - __init__
+    - __init__
+    - __init__
+    classes:
+    - OpenAIEmbeddingFNLLM
+    - OpenAIChatFNLLM
+    - AzureOpenAIEmbeddingFNLLM
+    - AzureOpenAIChatFNLLM
+  - file: graphrag/language_model/providers/fnllm/utils.py
+    docstring: "Utilities for FNLLM-based OpenAI provider.\n\nThis module contains\
+      \ internal helpers used by Graphrag's FNLLM OpenAI provider. It offers\nsupport\
+      \ for error handling, synchronous execution of coroutines, derivation of OpenAI\
+      \ API\nparameters from language model configurations, and a bridge to a pipeline\
+      \ cache via\nFNLLMCacheProvider. It supports both Azure OpenAI and Public OpenAI\
+      \ configurations and\nincludes special handling for reasoning models.\n\nExports:\n\
+      - _create_error_handler(callbacks: WorkflowCallbacks) -> ErrorHandlerFn\n- run_coroutine_sync(coroutine:\
+      \ Coroutine[Any, Any, T]) -> T\n- is_reasoning_model(model: str) -> bool\n-\
+      \ _create_cache(cache: PipelineCache | None, name: str) -> FNLLMCacheProvider\
+      \ | None\n- on_error(error: BaseException | None = None, stack: str | None =\
+      \ None, details: dict | None = None) -> None\n- get_openai_model_parameters_from_dict(config:\
+      \ dict[str, Any]) -> dict[str, Any]\n- get_openai_model_parameters_from_config(config:\
+      \ LanguageModelConfig) -> dict[str, Any]\n- _create_openai_config(config: LanguageModelConfig,\
+      \ azure: bool) -> OpenAIConfig\n\nNotes:\n- This module relies on types and\
+      \ utilities from fnllm and graphrag; it is intended for internal use\n  by the\
+      \ FNLLM provider."
+    functions:
+    - _create_error_handler
+    - run_coroutine_sync
+    - is_reasoning_model
+    - _create_cache
+    - on_error
+    - get_openai_model_parameters_from_dict
+    - get_openai_model_parameters_from_config
+    - _create_openai_config
+    classes: []
+  - file: graphrag/language_model/providers/litellm/chat_model.py
+    docstring: "Graphrag Litellm chat model wrapper with streaming, caching, and resilience\
+      \ features.\n\nOverview:\nThis module provides a Graphrag wrapper around a Litellm\
+      \ chat model. It composes the underlying Litellm client with request wrappers\
+      \ for caching, logging, rate limiting, and retries, and integrates with Graphrag's\
+      \ PipelineCache and LanguageModelConfig to offer a configurable, resilient language\
+      \ model interface. The main export is the LitellmChatModel class, which implements\
+      \ streaming and non-streaming chat capabilities.\n\nPublic exports:\n- LitellmChatModel:\
+      \ Wrapper around a Litellm chat model that supports streaming, caching, and\
+      \ resilience features.\n\nPublic methods on LitellmChatModel:\n- achat_stream(prompt:\
+      \ str, history: list | None = None, **kwargs: Any) -> AsyncGenerator[str, None]\n\
+      \  Generate a response for the given prompt as a stream of strings.\n- chat(prompt:\
+      \ str, history: list | None = None, **kwargs: Any) -> MR\n  Generate a response\
+      \ for the given prompt and history synchronously (returns a ModelResponse alias\
+      \ MR).\n- chat_stream(prompt: str, history: list | None = None, **kwargs: Any)\
+      \ -> Generator[str, None]\n  Generate a response for the given prompt and history\
+      \ as a string stream.\n- achat(prompt: str, history: list | None = None, **kwargs:\
+      \ Any) -> MR\n  Asynchronously generate a response for the given prompt and\
+      \ history.\n\nNotes:\n- The implementation wraps base litellm completion and\
+      \ acompletion with configured wrappers (with_cache, with_logging, with_rate_limiter,\
+      \ with_retries).\n- Uses PipelineCache and LanguageModelConfig for configuration\
+      \ and caching; ModelResponse alias MR is used for return types."
+    functions:
+    - _get_kwargs
+    - achat_stream
+    - chat
+    - chat_stream
+    - _base_completion
+    - achat
+    - _base_acompletion
+    - _create_base_completions
+    - _create_completions
+    - __init__
+    classes:
+    - LitellmChatModel
+  - file: graphrag/language_model/providers/litellm/embedding_model.py
+    docstring: "LitellmEmbeddingModel module\n\nPurpose\nProvide a wrapper around\
+      \ Litellm's embedding endpoints to generate vector representations for text\
+      \ inputs. It supports batch and single-input embeddings and can be augmented\
+      \ with optional request-handling wrappers for caching, logging, rate limiting,\
+      \ and retries.\n\nPublic exports\n- LitellmEmbeddingModel: Primary class exposing\
+      \ batch and single-input embedding methods.\n\nSummary\nThe LitellmEmbeddingModel\
+      \ wraps Litellm's embedding functionality, composing base embedding calls with\
+      \ the model configuration and optional middleware to produce consistent embeddings.\
+      \ It supports synchronous and asynchronous operations and can be configured\
+      \ with a per-model PipelineCache.\n\nUsage example\n# Initialize with a LanguageModelConfig\
+      \ instance (details omitted)\nconfig = LanguageModelConfig(...)  # configure\
+      \ as needed\nmodel = LitellmEmbeddingModel(name=\"my-model\", config=config)\n\
+      \n# Single embedding\nvec = model.embed(\"Sample text to embed\")\n\n# Batch\
+      \ embeddings\nbatch_vecs = model.embed_batch([\"First text\", \"Second text\"\
+      ])\n\nParameters\n- __init__(name: str, config: LanguageModelConfig, cache:\
+      \ PipelineCache | None = None, **kwargs) -> None\n  name: The model instance\
+      \ name.\n  config: The configuration for the language model.\n  cache: Optional\
+      \ cache to use for embeddings; if provided, a scoped cache is created.\n  **kwargs:\
+      \ Additional options forwarded to the underlying embedding machinery.\n\nReturns\n\
+      - None\n\nMethods\n- embed_batch(text_list: list[str], **kwargs: Any) -> list[list[float]]\n\
+      \  Batch generate embeddings for a list of texts.\n- aembed_batch(text_list:\
+      \ list[str], **kwargs: Any) -> list[list[float]]\n  Async batch embeddings.\n\
+      - embed(text: str, **kwargs: Any) -> list[float]\n  Embed a single text input.\n\
+      - aembed(text: str, **kwargs: Any) -> list[float]\n  Async single embedding.\n\
+      - Internal helpers: _get_kwargs, _base_embedding, _base_aembedding, _create_base_embeddings,\
+      \ _create_embeddings\n\nExceptions\n- May raise ValueError or TypeError for\
+      \ invalid inputs; RuntimeError or network-related exceptions may propagate from\
+      \ the underlying embedding service. Implementations may retry or log as configured."
+    functions:
+    - _get_kwargs
+    - embed_batch
+    - aembed_batch
+    - _base_aembedding
+    - _base_embedding
+    - aembed
+    - _create_base_embeddings
+    - embed
+    - _create_embeddings
+    - __init__
+    classes:
+    - LitellmEmbeddingModel
+  - file: graphrag/language_model/response/base.py
+    docstring: 'Module providing typed containers for LLM provider responses.
+
+
+      Purpose
+
+      Provide typed containers to represent responses from a language model provider,
+      including the textual output, the provider''s full JSON response, and optional
+      parsed model instances, along with a simple history of responses.
+
+
+      Exports
+
+      - ModelResponse: a generic container for responses from an LLM provider, parameterized
+      by T
+
+      - ModelOutput: a container that bundles the textual content with the full JSON
+      response
+
+      - T: TypeVar bound to BaseModel, used to type the parsed_response
+
+
+      Summary
+
+      This module defines ModelResponse[T] and ModelOutput to model LLM outputs in
+      a type-safe way. ModelResponse holds the output, the complete provider response,
+      an optional parsed model instance, and a history of responses. ModelOutput provides
+      access to content and the complete raw response.'
+    functions:
+    - output
+    - history
+    - parsed_response
+    - content
+    - full_response
+    classes:
+    - ModelResponse
+    - ModelOutput
+- module: Storage & Vector Store Integrations
+  description: Storage abstractions and concrete implementations for file/blob storage
+    and vector stores (LanceDB, Cosmos, Azure AI Search, etc.).
+  files:
+  - file: graphrag/storage/__init__.py
+    docstring: ''
+    functions: []
+    classes: []
+  - file: graphrag/storage/file_pipeline_storage.py
+    docstring: 'File-based storage backend for a pipeline that stores items as individual
+      files under a root directory.
+
+
+      Purpose:
+
+      This module provides a filesystem-backed implementation of the PipelineStorage
+      interface. It manages a root directory (creating it if necessary) and offers
+      operations to read, write, delete, list keys, clear storage, and find files
+      by pattern. It supports a configurable text encoding for file I/O and relies
+      on aiofiles for asynchronous-like filesystem interactions.
+
+
+      Exports:
+
+      - FilePipelineStorage: The File-based storage backend class implementing the
+      PipelineStorage interface.
+
+
+      Summary:
+
+      The FilePipelineStorage class exposes methods to clear storage, enumerate keys,
+      obtain child storages, filter items, perform file pattern searches, and perform
+      standard CRUD operations (get, set, has, delete) along with utility helpers
+      for path joining and reading files. The storage root is created if missing,
+      and the encoding for file operations can be customized via initialization parameters.'
+    functions:
+    - clear
+    - keys
+    - child
+    - item_filter
+    - find
+    - __init__
+    - _read_file
+    - join_path
+    - get
+    - set
+    - has
+    - delete
+    - get_creation_date
+    classes:
+    - FilePipelineStorage
+  - file: graphrag/storage/blob_pipeline_storage.py
+    docstring: "Blob-based storage backend for GraphRag pipeline data using Azure\
+      \ Blob Storage.\n\nOverview:\nThis module provides a BlobPipelineStorage class,\
+      \ a Azure Blob Storage backed implementation of the PipelineStorage interface\
+      \ used to cache pipeline results and data. It stores dataframe exports as JSON\
+      \ (records format) or Parquet, supports retrieving values, finding blobs by\
+      \ pattern, and basic cache management. Initialization selects the authentication\
+      \ flow based on provided credentials: a connection_string or a storage_account_blob_url\
+      \ with DefaultAzureCredential.\n\nPublic API:\n- BlobPipelineStorage: Azure\
+      \ Blob Storage backed implementation of the PipelineStorage interface.\n\nUsage\
+      \ examples:\n- Instantiate with a connection string:\n  storage = BlobPipelineStorage(connection_string=<connection_string>,\
+      \ container_name='my-container')\n- Or instantiate with a storage account URL\
+      \ and DefaultAzureCredential:\n  storage = BlobPipelineStorage(storage_account_blob_url=<storage_account_blob_url>,\
+      \ container_name='my-container')\n- Store a dataframe export (JSON or Parquet)\
+      \ under a key:\n  storage.set('exports/key1', dataframe)\n- Retrieve a cached\
+      \ item:\n  value = storage.get('exports/key1')\n- Find blobs by pattern:\n \
+      \ for name, meta in storage.find(re.compile(r'.*')):\n      pass\n- Clear cache\
+      \ (no-op in this implementation):\n  storage.clear()\n\nNotes:\n- Requires Azure\
+      \ SDKs: azure-storage-blob and azure-identity.\n- The constructor raises ValueError\
+      \ if neither a connection_string nor a storage_account_blob_url is provided.\
+      \ During normal operation, Azure SDK exceptions may be raised for container\
+      \ creation, blob operations, or metadata access."
+    functions:
+    - _abfs_url
+    - keys
+    - _set_df_json
+    - _set_df_parquet
+    - find
+    - clear
+    - get
+    - _create_container
+    - delete
+    - _container_exists
+    - set
+    - _keyname
+    - __init__
+    - has
+    - item_filter
+    - _delete_container
+    - validate_blob_container_name
+    - child
+    - _blobname
+    - get_creation_date
+    classes:
+    - BlobPipelineStorage
+  - file: graphrag/vector_stores/__init__.py
+    docstring: ''
+    functions: []
+    classes: []
+  - file: graphrag/vector_stores/factory.py
+    docstring: 'Module for a registry-based factory to construct vector store instances
+      from registered implementations.
+
+
+      This module defines VectorStoreFactory, a registry-based factory that maintains
+      a registry mapping vector_store_type keys (strings) to creator callables that
+      return BaseVectorStore instances. It exposes classmethods to instantiate vector
+      stores by type, list supported types, verify support for a type, and register
+      new implementations.
+
+
+      Public API
+
+      - VectorStoreFactory: Registry-based factory for constructing vector store instances
+      from registered implementations. Purpose: maintains a registry that maps vector_store_type
+      keys (strings) to creator callables that return BaseVectorStore instances. It
+      exposes classmethods to instantiate vector stores by type, list supported types,
+      verify support for a type, and register new implementations.
+
+      - create_vector_store(vector_store_type: str, vector_store_schema_config: VectorStoreSchemaConfig,
+      **kwargs: dict) -> BaseVectorStore: Create a vector store object from the provided
+      type via a registry lookup. This function looks up the registered vector store
+      implementation by vector_store_type and instantiates it by passing vector_store_schema_config
+      and any additional keyword arguments to the concrete vector store constructor.
+      The concrete vector_store may require or accept additional kwargs; these are
+      forwarded via kwargs.
+
+      - get_vector_store_types(cls) -> list[str]: Get the registered vector store
+      implementations. Args: cls: The class on which this classmethod is invoked.
+      Returns: list[str]: The list of registered vector store type keys (i.e., the
+      keys of cls._registry).
+
+      - is_supported_type(cls, vector_store_type: str) -> bool: Check if the given
+      vector_store_type is supported. Args: cls: type The class reference (classmethod
+      parameter). vector_store_type: str The type identifier for the vector store.
+      Returns: bool: True if vector_store_type is registered in the registry, False
+      otherwise.
+
+      - register(cls, vector_store_type: str, creator: Callable[..., BaseVectorStore])
+      -> None: Register a custom vector store implementation. Stores the provided
+      creator in the internal registry under the given vector_store_type. The registration
+      does not enforce any factory semantics; the creator is stored as-is and will
+      be invoked at runtime by VectorStoreFactory.create_vector_store with vector_store_schema_config
+      and any additional keyword arguments. Args: vector_store_type (str): ...'
+    functions:
+    - create_vector_store
+    - get_vector_store_types
+    - is_supported_type
+    - register
+    classes:
+    - VectorStoreFactory
+  - file: graphrag/vector_stores/lancedb.py
+    docstring: "LanceDB-backed vector store implementation for GraphRAG.\n\nThis module\
+      \ provides a LanceDB-backed implementation of the vector store interface\nused\
+      \ by GraphRAG. It stores document embeddings in a LanceDB collection and\nsupports\
+      \ similarity search by input text or by embedding vector, loading\ndocuments,\
+      \ optional filtering by document IDs, and connecting to a LanceDB\ndatabase.\n\
+      \nKey exports:\n- LanceDBVectorStore: LanceDB-backed vector store class implementing\
+      \ the vector store\n  interface. Public methods include similarity_search_by_text,\
+      \ similarity_search_by_vector,\n  load_documents, search_by_id, filter_by_id,\
+      \ and connect.\n- VectorStoreDocument: type used to represent stored documents.\n\
+      - VectorStoreSearchResult: type used to represent search results.\n- VectorStoreSchemaConfig:\
+      \ configuration model describing the vector store schema.\n\nBrief summary:\n\
+      The module adapts GraphRAG's vector store abstractions to LanceDB, enabling\
+      \ scalable\nembedding storage and retrieval with LanceDB's indexing capabilities."
+    functions:
+    - similarity_search_by_text
+    - search_by_id
+    - load_documents
+    - similarity_search_by_vector
+    - filter_by_id
+    - __init__
+    - connect
+    classes:
+    - LanceDBVectorStore
+  - file: graphrag/vector_stores/cosmosdb.py
+    docstring: "Cosmos DB backed vector store for GraphRAG.\n\nThis module implements\
+      \ a Cosmos DB-backed storage backend that conforms to GraphRAG's vector store\
+      \ interface. It stores document vectors and associated metadata in Azure Cosmos\
+      \ DB, supports loading documents, text-based similarity search, and vector-based\
+      \ similarity search, and manages the creation and deletion of the underlying\
+      \ database and container along with indexing configuration.\n\nPublic API\n\
+      - CosmosDBVectorStore(vector_store_schema_config: VectorStoreSchemaConfig, **kwargs:\
+      \ Any) -> None\n  Initialize the Cosmos DB vector store using the provided schema\
+      \ configuration.\n\n- connect(connection_string: str | None = None, url: str\
+      \ | None = None, database_name: str, **kwargs: Any) -> None\n  Establish a connection\
+      \ to the Cosmos DB account and initialize internal clients. If neither connection_string\
+      \ nor url is provided, a ValueError is raised. May raise CosmosHttpResponseError\
+      \ on HTTP errors.\n\n- load_documents(documents: list[VectorStoreDocument],\
+      \ overwrite: bool = True) -> None\n  Load or upsert the given documents into\
+      \ the store. If overwrite is True, the container may be reset prior to loading.\
+      \ Documents with non-null vectors are stored, with fields mapped according to\
+      \ the configured id_field, vector_field, text_field, and attributes_field.\n\
+      \n- similarity_search_by_text(text: str, text_embedder: TextEmbedder, k: int\
+      \ = 10, **kwargs: Any) -> list[VectorStoreSearchResult]\n  Perform a text-based\
+      \ similarity search and return up to k matching results as VectorStoreSearchResult\
+      \ objects.\n\n- similarity_search_by_vector(query_embedding: list[float], k:\
+      \ int = 10, **kwargs: Any) -> list[VectorStoreSearchResult]\n  Perform a vector-based\
+      \ similarity search against the stored embeddings and return up to k top results\
+      \ as VectorStoreSearchResult objects.\n\n- search_by_id(id: str) -> VectorStoreDocument\n\
+      \  Retrieve a document by its identifier, returning its id, vector, text, and\
+      \ attributes.\n\n- clear() -> None\n  Delete the vector store container and\
+      \ the database to reset the store.\n\nNotes on internals (implementation detail,\
+      \ not required for typical usage)\n- Internal helpers such as _database_exists,\
+      \ _container_exists, _create_database, _create_container, _delete_database,\
+      \ _delete_container, filter_by_id, and cosine_similarity support lifecycle management\
+      \ and search operations. These are intended for internal use and may change\
+      \ without breaking the public API.\n\nCredentials and configuration\n- VectorStoreSchemaConfig\
+      \ (graphrag.config.models.vector_store_schema_config.VectorStoreSchemaConfig)\
+      \ defines mappings for id_field, vector_field, text_field, and attributes_field,\
+      \ as well as the database and container naming and indexing options used by\
+      \ Cosmos DB.\n- Cosmos DB credentials: a Cosmos DB account accessible via account\
+      \ URL or a connection string. Use connect(connection_string=...) or connect(url=...,\
+      \ database_name=...) accordingly. Authentication is typically performed via\
+      \ DefaultAzureCredential or other Azure Identity credentials in your environment.\n\
+      \nError handling\n- CosmosHttpResponseError is raised for HTTP or Cosmos DB\
+      \ service errors.\n- ValueError is raised for invalid arguments (for example,\
+      \ missing required connection details).\n\nUsage example\n- Instantiate: store\
+      \ = CosmosDBVectorStore(vector_store_schema_config)\n- Connect: store.connect(url=\"\
+      https://<account>.documents.azure.com:443/\", database_name=\"<db>\")\n- Load\
+      \ documents: store.load_documents(documents, overwrite=True)\n- Text search:\
+      \ results = store.similarity_search_by_text(\"query text\", text_embedder, k=5)\n\
+      - Vector search: results = store.similarity_search_by_vector([0.12, -0.34, ...],\
+      \ k=5)\n- Retrieve by id: doc = store.search_by_id(\"doc1\")\n- Clear store:\
+      \ store.clear()"
+    functions:
+    - _database_exists
+    - similarity_search_by_text
+    - _delete_database
+    - filter_by_id
+    - __init__
+    - cosine_similarity
+    - _create_database
+    - _create_container
+    - connect
+    - load_documents
+    - _container_exists
+    - search_by_id
+    - _delete_container
+    - clear
+    - similarity_search_by_vector
+    classes:
+    - CosmosDBVectorStore
+  - file: graphrag/vector_stores/azure_ai_search.py
+    docstring: 'Azure AI Search vector store integration for GraphRag.
+
+
+      Purpose: This module provides an Azure AI Search backed vector store class used
+      by GraphRag to perform vector-based and text-based retrieval, as well as loading
+      documents into Azure Cognitive Search indices. It delegates initialization to
+      the base vector store class and is configured via VectorStoreSchemaConfig.
+
+
+      Key exports:
+
+      - AzureAISearchVectorStore: Azure AI Search vector store class implementing
+      vector search functionality using Azure Cognitive Search; exposes methods similarity_search_by_vector,
+      connect, similarity_search_by_text, filter_by_id, search_by_id, load_documents;
+      initialization delegates to the base class and config is provided via VectorStoreSchemaConfig.
+
+      - similarity_search_by_vector(query_embedding: list[float], k: int = 10, **kwargs:
+      Any) -> list[VectorStoreSearchResult]: Performs a vector-based similarity search
+      using the provided embedding and returns top-k results as VectorStoreSearchResult.
+
+      - connect(**kwargs: Any) -> Any: Establishes a connection to the Azure AI Search
+      service; supports url, api_key (uses AzureKeyCredential if provided) and other
+      options like audience and vector_search_profile_name; returns a client or connection
+      handle.
+
+      - similarity_search_by_text(text: str, text_embedder: TextEmbedder, k: int =
+      10, **kwargs: Any) -> list[VectorStoreSearchResult]: Performs a text-based similarity
+      search using the given text and embedder.
+
+      - filter_by_id(include_ids: list[str] | list[int]) -> Any: Builds a query filter
+      to filter documents by the provided IDs; returns the filter string or None if
+      no IDs provided.
+
+      - __init__(self, vector_store_schema_config: VectorStoreSchemaConfig, **kwargs:
+      Any) -> None: Initializes the Azure AI Search vector store by delegating to
+      the base class constructor.
+
+      - search_by_id(id: str) -> VectorStoreDocument: Fetches the document by id from
+      the index; returns a VectorStoreDocument with id, text, vector, and attributes.
+
+      - load_documents(self, documents: list[VectorStoreDocument], overwrite: bool
+      = True) -> None: Uploads provided documents to the Azure AI Search index; if
+      overwrite is True, the index is recreated prior to loading; only documents with
+      non-null vectors are uploaded.
+
+
+      Raises:
+
+      - Exceptions raised by the base class __init__ are propagated.
+
+      - Underlying Azure SDK operations may raise their own exceptions during connection
+      and indexing.
+
+
+      Brief summary: This module wires Azure AI Search into GraphRag as a pluggable
+      vector store, enabling both vector and text search and document loading backed
+      by Azure''s search services.'
+    functions:
+    - similarity_search_by_vector
+    - connect
+    - similarity_search_by_text
+    - filter_by_id
+    - __init__
+    - search_by_id
+    - load_documents
+    classes:
+    - AzureAISearchVectorStore
+- module: Unified Search App (Demo UI)
+  description: Demo UI and data loading components for Unified Search, built around
+    the GraphRAG index and results visualization.
+  files:
+  - file: unified-search-app/app/__init__.py
+    docstring: ''
+    functions: []
+    classes: []
+  - file: unified-search-app/app/app_logic.py
+    docstring: "Unified search app logic for the unified search experience.\n\nThis\
+      \ module provides the core orchestration for the unified search application:\
+      \ loading datasets and the knowledge model, and running multiple search strategies\
+      \ (global, local, drift, and basic) as well as question generation. It coordinates\
+      \ with the UI layer and data sources to manage session state and produce SearchResult\
+      \ objects for display.\n\nExports:\n- load_knowledge_model(sv: SessionVariables)\
+      \ -> None\n  Load the knowledge model from the data source and populate the\
+      \ session state with the loaded model data. This includes entities, relationships,\
+      \ covariates, community reports, communities, and text units. It also resets\
+      \ generated_questions and related UI state. May raise exceptions if loading\
+      \ fails.\n\n- dataset_name(key: str, sv: SessionVariables) -> str\n  Return\
+      \ the dataset name corresponding to the provided key. Raises AttributeError\
+      \ if the key is not found in sv.datasets.value.\n\n- run_global_search_question_generation(query:\
+      \ str, sv: SessionVariables) -> SearchResult\n  Run global search question generation\
+      \ and return a SearchResult describing the generated questions.\n\n- run_global_search(query:\
+      \ str, sv: SessionVariables) -> SearchResult\n  Execute the global search and\
+      \ return its result.\n\n- run_drift_search(query: str, sv: SessionVariables)\
+      \ -> SearchResult\n  Execute the drift-based search and return its result.\n\
+      \n- run_local_search(query: str, sv: SessionVariables) -> SearchResult\n  Execute\
+      \ the local search and return its result.\n\n- run_basic_search(query: str,\
+      \ sv: SessionVariables) -> SearchResult\n  Execute the basic search and return\
+      \ its result.\n\n- run_generate_questions(query: str, sv: SessionVariables)\
+      \ -> tuple[SearchResult, ...]\n  Run the global search to generate questions\
+      \ for the dataset; returns a tuple containing the results of the individual\
+      \ generation tasks in the order they were added.\n\n- load_dataset(dataset:\
+      \ str, sv: SessionVariables) -> None\n  Load the selected dataset into session\
+      \ state, initializing related fields and data sources; may load the corresponding\
+      \ knowledge model if available. May raise exceptions on failure.\n\n- run_all_searches(query:\
+      \ str, sv: SessionVariables) -> list[SearchResult]\n  Run all enabled search\
+      \ engines and return their results as a list.\n\nNotes:\n- Function naming in\
+      \ code uses load_knowledge_model; if a future refactor renames this to load_model,\
+      \ align the docstring to avoid confusion.\n- Exceptions: callers should handle\
+      \ generic Exceptions raised by I/O, API calls, or data loading.\n- Side effects:\
+      \ this module mutates session state (sv) and may perform network calls as part\
+      \ of search execution."
+    functions:
+    - load_knowledge_model
+    - dataset_name
+    - run_global_search_question_generation
+    - run_global_search
+    - run_drift_search
+    - run_local_search
+    - run_basic_search
+    - run_generate_questions
+    - load_dataset
+    - run_all_searches
+    classes: []
+  - file: unified-search-app/app/home_page.py
+    docstring: "Home page UI for the Unified Search App rendered via Streamlit.\n\n\
+      Purpose:\nThis module defines the main Streamlit-based home page renderer for\
+      \ the Unified Search App. It wires together the app logic and UI components\
+      \ to render the GraphRAG UI, among other UI pieces (questions, reports, and\
+      \ side bar).\n\nKey exports:\n- main(): asynchronous coroutine that renders\
+      \ the main UI.\n  Args: None: This function takes no parameters.\n  Returns:\
+      \ None: This coroutine does not return a value.\n- on_click_reset(sv: SessionVariables):\
+      \ Reset the relevant session variables on reset action.\n  Args: sv (SessionVariables):\
+      \ The session variables container; resets sv.generated_questions.value to [],\
+      \ sv.selected_question.value to '', and sv.show_text_input.value to True.\n\
+      \  Returns: None: This function does not return a value.\n- on_change(sv: SessionVariables):\
+      \ Updates the current question in the session variables from the Streamlit session\
+      \ state.\n  Args: sv (SessionVariables): The session variables container; updates\
+      \ sv.question.value from the input.\n  Returns: None: This function does not\
+      \ return a value.\n  Raises: KeyError: If the key 'question_input' is not present\
+      \ in st.session_state.\n\nBrief summary:\nThe module coordinates app logic with\
+      \ UI components to present the primary user interface, including graph visualization,\
+      \ question generation/listing, and reports, through Streamlit calls."
+    functions:
+    - main
+    - on_click_reset
+    - on_change
+    classes: []
+  - file: unified-search-app/app/knowledge_loader/model.py
+    docstring: "Knowledge loading helpers for the unified search app.\n\nThis module\
+      \ provides lightweight wrappers that delegate to the knowledge_loader.data_prep\
+      \ utilities to load slices of knowledge data from a specified dataset via a\
+      \ Datasource. Loaded data are returned as pandas DataFrame objects and can be\
+      \ used to build the knowledge model consumed by the application. The load_model\
+      \ function returns a KnowledgeModel object representing the assembled knowledge.\n\
+      \nExports:\n  - load_entities(dataset: str, _datasource: Datasource) -> pandas.DataFrame\n\
+      \  - load_entity_relationships(dataset: str, _datasource: Datasource) -> pandas.DataFrame\n\
+      \  - load_communities(_datasource: Datasource) -> pandas.DataFrame\n  - load_covariates(dataset:\
+      \ str, _datasource: Datasource) -> pandas.DataFrame\n  - load_community_reports(_datasource:\
+      \ Datasource) -> pandas.DataFrame\n  - load_text_units(dataset: str, _datasource:\
+      \ Datasource) -> pandas.DataFrame\n  - load_model(dataset: str, datasource:\
+      \ Datasource) -> KnowledgeModel\n\nSummary:\n  Each function delegates to the\
+      \ corresponding data_prep loader, propagating any exceptions from the underlying\
+      \ utilities. This module is intended for convenient access to the data slices\
+      \ needed to build and populate the knowledge model used by the unified search\
+      \ app."
+    functions:
+    - load_entities
+    - load_entity_relationships
+    - load_communities
+    - load_covariates
+    - load_community_reports
+    - load_text_units
+    - load_model
+    classes: []
+  - file: unified-search-app/app/knowledge_loader/data_sources/default.py
+    docstring: ''
+    functions: []
+    classes: []
+  - file: unified-search-app/app/knowledge_loader/data_sources/blob_source.py
+    docstring: 'BlobDatasource for Azure Blob Storage-backed knowledge data used by
+      the knowledge loader.
+
+
+      This module defines the BlobDatasource class which provides access to knowledge
+      data stored in Azure Blob Storage, enabling reading Parquet tables and graphrag
+      configurations used by the knowledge loader. It connects to a configured Azure
+      Blob container using the provided database identifier to locate data and settings.
+
+
+      Key exports:
+
+      - BlobDatasource: Primary export providing access to blob storage for knowledge
+      data and settings.
+
+
+      Brief summary:
+
+      - Supports reading parquet tables via read, loading graphrag settings via read_settings,
+      and loading arbitrary blob content via load_blob_file and prompt configurations
+      via load_blob_prompt_config.
+
+
+      Args:
+
+      - database: The database identifier used to access the blob storage.
+
+
+      Returns:
+
+      - BlobDatasource: An instance configured to access the specified blob container
+      and its data/settings.
+
+
+      Raises:
+
+      - Exception: If authentication, network, or other Azure Blob Storage errors
+      occur.'
+    functions:
+    - __init__
+    - _get_container
+    - load_blob_prompt_config
+    - load_blob_file
+    - read
+    - read_settings
+    classes:
+    - BlobDatasource
+  - file: unified-search-app/app/knowledge_loader/data_sources/loader.py
+    docstring: "Utilities to load data sources for the knowledge loader, supporting\
+      \ both blob and local storage.\n\nThis module provides helpers to construct\
+      \ dataset base paths, create the appropriate data source\nobject (BlobDatasource\
+      \ or LocalDatasource), and load dataset listings and prompts from either blob\n\
+      storage or local data.\n\nExports\n- _get_base_path(dataset: str | None, root:\
+      \ str | None, extra_path: str | None = None) -> str\n- create_datasource(dataset_folder:\
+      \ str) -> Datasource\n- load_dataset_listing() -> list[DatasetConfig]\n- load_prompts(dataset:\
+      \ str) -> dict[str, str]\n\nFunctions\n- _get_base_path(dataset: str | None,\
+      \ root: str | None, extra_path: str | None = None) -> str\n  Args:\n    dataset:\
+      \ The dataset folder name, or None to omit.\n    root: The root path segment,\
+      \ or None to omit.\n    extra_path: Additional path segments separated by '/'\
+      \ (if provided).\n  Returns:\n    str: The constructed base path as a string.\n\
+      \  Raises:\n    Exceptions that may be raised during path construction.\n- create_datasource(dataset_folder:\
+      \ str) -> Datasource\n  Args:\n    dataset_folder: Path to the dataset folder\
+      \ to load data from.\n  Returns:\n    A datasource instance. If blob_account_name\
+      \ is set, a BlobDatasource is returned; otherwise,\n    a LocalDatasource configured\
+      \ with the base path derived from dataset_folder and local_data_root.\n  Raises:\n\
+      \    Exceptions that may be raised during datasource creation.\n- load_dataset_listing()\
+      \ -> list[DatasetConfig]\n  Returns:\n    A list of DatasetConfig instances\
+      \ parsed from the listing file. When blob storage is configured,\n    the listing\
+      \ is loaded from blob storage and, on error, prints the issue and returns an\
+      \ empty list.\n- load_prompts(dataset: str) -> dict[str, str]\n  Args:\n   \
+      \ dataset: The dataset name to load prompts for.\n  Returns:\n    dict[str,\
+      \ str]: The prompts configuration for the specified dataset.\n  Raises:\n  \
+      \  Exception: Propagated exceptions from underlying load operations."
+    functions:
+    - _get_base_path
+    - create_datasource
+    - load_dataset_listing
+    - load_prompts
+    classes: []
+  - file: unified-search-app/app/rag/typing.py
+    docstring: ''
+    functions: []
+    classes: []
+  - file: unified-search-app/app/ui/search.py
+    docstring: 'Unified search UI utilities for the Streamlit-based application.
+
+
+      This module provides UI components and helpers used by the unified search UI.
+      It
+
+      facilitates rendering of HTML results, parsing and formatting of responses,
+
+      formatting citations and hyperlinks, and displaying search-related results and
+
+      graphs within the Streamlit interface.
+
+
+      Key exports:
+
+      - init_search_ui(container, search_type, title, caption): Initialize search
+      UI component in the specified container for the given search type.
+
+      - render_html_table(df, search_type, key): Render a DataFrame as an HTML table
+      in the UI with per-cell formatting and IDs for rows.
+
+      - convert_numbered_list_to_array(numbered_list_str): Convert a numbered-list
+      string into an array of extracted items.
+
+      - format_response_hyperlinks_by_key(str_response, key, anchor, search_type=""):
+      Format response to show hyperlinks inside the response UI by key.
+
+      - get_ids_per_key(str_response, key): Get IDs associated with a given key from
+      a string response.
+
+      - format_suggested_questions(questions): Format suggested questions for display
+      in the UI.
+
+      - format_response_hyperlinks(str_response, search_type=""): Format response
+      to show hyperlinks inside the response UI.
+
+      - display_citations(container=None, result=None): Display citations into the
+      UI.
+
+      - display_graph_citations(entities, relationships, citation_type): Display graph
+      citations in the UI.
+
+      - display_search_result(container, result, stats=None): Display search results
+      in the UI and update placeholders.
+
+
+      Constants:
+
+      - SHORT_WORDS = 12
+
+      - LONG_WORDS = 200
+
+
+      Brief summary: The module focuses on rendering search results, formatting responses,
+      and
+
+      displaying citations for both textual and graph-based results in the unified
+      search UI.'
+    functions:
+    - init_search_ui
+    - render_html_table
+    - convert_numbered_list_to_array
+    - format_response_hyperlinks_by_key
+    - get_ids_per_key
+    - format_suggested_questions
+    - format_response_hyperlinks
+    - display_citations
+    - display_graph_citations
+    - display_search_result
+    classes: []
+  - file: unified-search-app/app/ui/sidebar.py
+    docstring: 'UI sidebar utilities for the unified search app.
+
+
+      Overview
+
+      Provides the Streamlit sidebar panel and a set of session-state helpers used
+      to configure the dataset, the number of suggested questions, and which search
+      modes are active. Functions operate on a SessionVariables container (sv) to
+      read and update relevant UI state.
+
+
+      Exports
+
+      - update_basic_rag(sv: SessionVariables) -> None
+
+      - reset_app() -> None
+
+      - update_global_search(sv: SessionVariables) -> None
+
+      - lookup_label(key: str, sv: SessionVariables) -> str
+
+      - update_drift_search(sv: SessionVariables) -> None
+
+      - update_local_search(sv: SessionVariables) -> None
+
+      - create_side_bar(sv: SessionVariables) -> None
+
+      - update_dataset(sv: SessionVariables) -> None
+
+
+      Notes
+
+      - lookup_label uses dataset_name(key, sv) to resolve a user-facing label for
+      a given dataset key.
+
+      - update_dataset clears the Streamlit cache via st.cache_data to reflect the
+      newly selected dataset and reinitialize related UI state.
+
+      - Flags stored on sv include sv.include_basic_rag, sv.include_global_search,
+      sv.include_drift_search, and sv.include_local_search.'
+    functions:
+    - update_basic_rag
+    - reset_app
+    - update_global_search
+    - lookup_label
+    - update_drift_search
+    - update_local_search
+    - create_side_bar
+    - update_dataset
+    classes: []
+  - file: unified-search-app/app/ui/full_graph.py
+    docstring: "Full graph UI for the Unified Search app.\n\nThis module provides\
+      \ the UI components used to render the complete graph visualization based on\
+      \ the current session state. It relies on Altair for chart construction, Pandas\
+      \ for data handling, and Streamlit for rendering in the app. The primary entry\
+      \ point is create_full_graph_ui, which builds and renders the chart using the\
+      \ provided SessionVariables.\n\nPublic API:\n    create_full_graph_ui(sv: SessionVariables)\n\
+      \nArgs:\n    sv (SessionVariables): Container with entities, communities, and\
+      \ graph_community_level used to construct and filter the graph.\n\nReturns:\n\
+      \    alt.Chart: The Altair chart object representing the full graph UI. The\
+      \ function also renders the chart via Streamlit."
+    functions:
+    - create_full_graph_ui
+    classes: []

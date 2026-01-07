@@ -1,0 +1,46 @@
+mermaid: "graph TB\n  subgraph \"Public Facing\"\n    api[Public API Layer]\n    cli[GraphRAG\
+  \ CLI]\n  end\n  subgraph \"Indexing & Query Engine\"\n    index[Indexing Engine]\n\
+  \    query[Query Engine]\n  end\n  subgraph \"Knowledge & AI Stack\"\n    kg[Knowledge\
+  \ Graph Data Model]\n    llm[AI Orchestration & LLM Providers]\n  end\n  subgraph\
+  \ \"Storage & UI\"\n    storage[Storage & Vector Stores]\n    ui[Unified Search\
+  \ App]\n  end\n\n  api -- \"start/indexing\" --> index\n  cli -- \"start/indexing\"\
+  \ --> index\n  index -- \"builds/updates graph\" --> kg\n  index -- \"persist graph/vectors\"\
+  \ --> storage\n  index -- \"embed/augment\" --> llm\n  llm -- \"embedding results\"\
+  \ --> index\n  query -- \"retrieve vectors\" --> storage\n  query -- \"query graph\"\
+  \ --> kg\n  query -- \"generate prompt\" --> llm\n  llm -- \"final answer\" -->\
+  \ query\n  api -- \"handle queries\" --> query\n  query -- \"response\" --> api\n\
+  \  ui -- \"user requests\" --> api\n  api -- \"render results\" --> ui"
+components:
+- id: api
+  name: Public API Layer
+  description: Public interfaces for indexing, prompt tuning, and querying GraphRAG
+    exposed to clients.
+- id: cli
+  name: GraphRAG CLI
+  description: Command-line tooling to orchestrate indexing, querying, and prompt
+    tuning workflows.
+- id: index
+  name: Indexing Engine
+  description: Core data processing pipeline that ingests documents, builds/upgrades
+    embeddings and the knowledge graph.
+- id: query
+  name: Query Engine
+  description: Context construction, retrieval, and LLM orchestration to answer questions
+    with graph context.
+- id: kg
+  name: Knowledge Graph Data Model
+  description: Data structures for documents, entities, relationships, and graphs
+    that form the knowledge base.
+- id: llm
+  name: AI Orchestration & LLM Providers
+  description: Abstractions and backends for language models, tokenization, and prompt
+    management.
+- id: storage
+  name: Storage & Vector Stores
+  description: Storage abstractions and concrete vector stores for graphs, embeddings,
+    and documents.
+- id: ui
+  name: Unified Search App
+  description: Demo UI for searching, loading data, and visualizing the knowledge
+    graph results.
+

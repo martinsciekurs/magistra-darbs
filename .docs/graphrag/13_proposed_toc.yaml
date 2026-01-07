@@ -1,0 +1,139 @@
+sections:
+- slug: introduction
+  title: Introduction
+  description: GraphRAG is a Python-based data pipeline and knowledge-graph augmentation
+    framework that indexes unstructured private text, extracts entities and relations,
+    builds a hierarchical knowledge graph, and uses LLMs to answer questions with
+    context-augmented prompts. This section provides an overview of the project, goals,
+    and key concepts.
+  is_core: true
+- slug: quick-start
+  title: Quick Start
+  description: A practical tour to install and start using GraphRAG, including setup,
+    indexing, prompt tuning, and querying workflows.
+  is_core: true
+  subsections:
+  - slug: installation
+    title: Installation
+    description: Prerequisites, environment setup, and dependency management.
+  - slug: getting-started
+    title: Getting Started with Workflows
+    description: Running the indexing, prompt tuning, and querying flows via the CLI
+      or APIs.
+- slug: architecture
+  title: Architecture
+  description: High-level view of GraphRAG's modular components and how they interact
+    to index data, build the knowledge graph, and answer questions with LLMs.
+  is_core: true
+  subsections:
+  - slug: component-overview
+    title: Component Overview
+    description: Core modules and data flow between API, indexing, query engine, and
+      UI integrations.
+- slug: api-reference
+  title: API Reference
+  description: Public interfaces for indexing, prompt tuning, and querying GraphRAG
+    used by clients and subsystems.
+  is_core: false
+  subsections:
+  - slug: public-api-layer
+    title: Public API Layer
+    description: Library-facing interfaces for indexing, prompt tuning, and querying.
+  - slug: prompt-tuning-api
+    title: Prompt Tuning API
+    description: Programmatic access to prompt tuning components and workflows.
+  - slug: query-api
+    title: Query API
+    description: Interfaces for building and executing context-aware queries against
+      the knowledge graph.
+- slug: cli-reference
+  title: CLI Reference
+  description: Command-line tooling to drive indexing, prompt tuning, and querying
+    workflows.
+  is_core: false
+  subsections:
+  - slug: indexing-commands
+    title: Indexing Commands
+    description: CLI commands to build and update the knowledge graph index.
+  - slug: prompt-tune-commands
+    title: Prompt Tuning Commands
+    description: CLI commands for prompt tuning workflows.
+  - slug: query-commands
+    title: Query Commands
+    description: CLI commands for executing QA queries against the index.
+- slug: data-model-ontology
+  title: Data Model & Ontology
+  description: Core data structures and schemas representing documents, entities,
+    relationships, communities, and metadata in GraphRAG.
+  is_core: false
+  subsections:
+  - slug: documents
+    title: Documents & Text Units
+    description: Data model for documents and text fragments.
+  - slug: entities-relationships
+    title: Entities & Relationships
+    description: Nodes and edges representing concepts and connections.
+  - slug: communities
+    title: Communities & Groupings
+    description: Community structures and metadata in the graph.
+  - slug: schemas-types
+    title: Schemas & Types
+    description: Validation schemas and type definitions used by the index and query
+      engines.
+- slug: ai-llm-providers
+  title: AI Orchestration & LLM Providers
+  description: Abstractions and backends for language models, tokenization, and LLM
+    service management.
+  is_core: false
+  subsections:
+  - slug: llm-providers-overview
+    title: LLM Providers Overview
+    description: Supported providers and pluggable backends.
+  - slug: tokenization
+    title: Tokenization & Embeddings
+    description: Tokenization strategies and embedding utilities.
+  - slug: provider-integration
+    title: Provider Integration
+    description: How to plug in custom LLMs and orchestration.
+- slug: storage-vector-stores
+  title: Storage & Vector Stores
+  description: Storage abstractions and concrete implementations for file/blob storage
+    and vector stores (LanceDB, Cosmos, Azure AI Search, etc.).
+  is_core: false
+  subsections:
+  - slug: storage-abstractions
+    title: Storage Abstractions
+    description: Unified storage interfaces and pipelines.
+  - slug: vector-stores
+    title: Vector Stores & Integrations
+    description: Supported vector store backends and usage patterns.
+  - slug: example-integrations
+    title: Integrations & Examples
+    description: Practical integration examples with common backends.
+- slug: workflows-indexing-query
+  title: Indexing & Query Workflows
+  description: End-to-end workflows for data ingestion, graph construction, embedding,
+    update, and question answering.
+  is_core: false
+  subsections:
+  - slug: indexing-pipelines
+    title: Indexing Pipelines
+    description: From input documents to graph nodes and edges.
+  - slug: graph-embeddings-update
+    title: Embeddings & Graph Updates
+    description: Embedding strategies and incremental updates.
+  - slug: validation-pruning
+    title: Validation, Pruning & Quality Checks
+    description: Validation, pruning, and consistency checks for the index.
+  - slug: qa-pipeline
+    title: QA & Contextual Reasoning
+    description: How context is constructed and passed to LLMs for answering questions.
+reasoning: The proposed TOC centers GraphRAG as a library with rich core capabilities
+  (API, CLI, architecture) while giving clear, navigable access to its data model,
+  AI orchestration, storage integrations, and end-to-end workflows. Core sections
+  cover overview, quick start, and architecture, ensuring newcomers and power users
+  can quickly orient themselves. Non-core sections provide reference material for
+  APIs, CLI usage, data model semantics, provider integrations, storage/vector store
+  bindings, and end-to-end workflows, with logical subsections to avoid overwhelming
+  readers while enabling targeted deep dives.
+

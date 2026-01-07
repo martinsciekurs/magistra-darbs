@@ -1,0 +1,132 @@
+confirmed: true
+sections:
+- description: GraphRAG is a Python-based data pipeline and knowledge-graph augmentation
+    framework that indexes unstructured private text, extracts entities and relations,
+    builds a hierarchical knowledge graph, and uses LLMs to answer questions with
+    context-augmented prompts. This section provides an overview of the project, goals,
+    and key concepts.
+  is_core: true
+  slug: introduction
+  title: Introduction
+- description: A practical tour to install and start using GraphRAG, including setup,
+    indexing, prompt tuning, and querying workflows.
+  is_core: true
+  slug: quick-start
+  subsections:
+  - description: Prerequisites, environment setup, and dependency management.
+    slug: installation
+    title: Installation
+  - description: Running the indexing, prompt tuning, and querying flows via the CLI
+      or APIs.
+    slug: getting-started
+    title: Getting Started with Workflows
+  title: Quick Start
+- description: High-level view of GraphRAG's modular components and how they interact
+    to index data, build the knowledge graph, and answer questions with LLMs.
+  is_core: true
+  slug: architecture
+  subsections:
+  - description: Core modules and data flow between API, indexing, query engine, and
+      UI integrations.
+    slug: component-overview
+    title: Component Overview
+  title: Architecture
+- description: Public interfaces for indexing, prompt tuning, and querying GraphRAG
+    used by clients and subsystems.
+  is_core: false
+  slug: api-reference
+  subsections:
+  - description: Library-facing interfaces for indexing, prompt tuning, and querying.
+    slug: public-api-layer
+    title: Public API Layer
+  - description: Programmatic access to prompt tuning components and workflows.
+    slug: prompt-tuning-api
+    title: Prompt Tuning API
+  - description: Interfaces for building and executing context-aware queries against
+      the knowledge graph.
+    slug: query-api
+    title: Query API
+  title: API Reference
+- description: Command-line tooling to drive indexing, prompt tuning, and querying
+    workflows.
+  is_core: false
+  slug: cli-reference
+  subsections:
+  - description: CLI commands to build and update the knowledge graph index.
+    slug: indexing-commands
+    title: Indexing Commands
+  - description: CLI commands for prompt tuning workflows.
+    slug: prompt-tune-commands
+    title: Prompt Tuning Commands
+  - description: CLI commands for executing QA queries against the index.
+    slug: query-commands
+    title: Query Commands
+  title: CLI Reference
+- description: Core data structures and schemas representing documents, entities,
+    relationships, communities, and metadata in GraphRAG.
+  is_core: false
+  slug: data-model-ontology
+  subsections:
+  - description: Data model for documents and text fragments.
+    slug: documents
+    title: Documents & Text Units
+  - description: Nodes and edges representing concepts and connections.
+    slug: entities-relationships
+    title: Entities & Relationships
+  - description: Community structures and metadata in the graph.
+    slug: communities
+    title: Communities & Groupings
+  - description: Validation schemas and type definitions used by the index and query
+      engines.
+    slug: schemas-types
+    title: Schemas & Types
+  title: Data Model & Ontology
+- description: Abstractions and backends for language models, tokenization, and LLM
+    service management.
+  is_core: false
+  slug: ai-llm-providers
+  subsections:
+  - description: Supported providers and pluggable backends.
+    slug: llm-providers-overview
+    title: LLM Providers Overview
+  - description: Tokenization strategies and embedding utilities.
+    slug: tokenization
+    title: Tokenization & Embeddings
+  - description: How to plug in custom LLMs and orchestration.
+    slug: provider-integration
+    title: Provider Integration
+  title: AI Orchestration & LLM Providers
+- description: Storage abstractions and concrete implementations for file/blob storage
+    and vector stores (LanceDB, Cosmos, Azure AI Search, etc.).
+  is_core: false
+  slug: storage-vector-stores
+  subsections:
+  - description: Unified storage interfaces and pipelines.
+    slug: storage-abstractions
+    title: Storage Abstractions
+  - description: Supported vector store backends and usage patterns.
+    slug: vector-stores
+    title: Vector Stores & Integrations
+  - description: Practical integration examples with common backends.
+    slug: example-integrations
+    title: Integrations & Examples
+  title: Storage & Vector Stores
+- description: End-to-end workflows for data ingestion, graph construction, embedding,
+    update, and question answering.
+  is_core: false
+  slug: workflows-indexing-query
+  subsections:
+  - description: From input documents to graph nodes and edges.
+    slug: indexing-pipelines
+    title: Indexing Pipelines
+  - description: Embedding strategies and incremental updates.
+    slug: graph-embeddings-update
+    title: Embeddings & Graph Updates
+  - description: Validation, pruning, and consistency checks for the index.
+    slug: validation-pruning
+    title: Validation, Pruning & Quality Checks
+  - description: How context is constructed and passed to LLMs for answering questions.
+    slug: qa-pipeline
+    title: QA & Contextual Reasoning
+  title: Indexing & Query Workflows
+

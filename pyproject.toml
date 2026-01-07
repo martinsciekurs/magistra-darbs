@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "docgen"
+version = "0.1.0"
+description = "Generate documentation for repositories using static analysis and LLM"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+    {name = "Martin SC"}
+]
+keywords = ["documentation", "llm", "code-analysis", "langgraph"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "tree-sitter==0.25.2",
+    "tree-sitter-language-pack==0.13.0",
+    "pyyaml==6.0.3",
+    "requests==2.32.5",
+    "python-dotenv==1.2.1",
+    "rich==14.2.0",
+    "openai==2.9.0",
+    "ollama==0.6.1",
+    "chromadb==1.3.5",
+    "langgraph==1.0.4",
+    "langgraph-checkpoint-sqlite==3.0.1",
+    "langchain-core==1.2.1",
+    "langchain-openai==1.1.3",
+    "langchain-anthropic==1.3.0",
+    "langchain-ollama==1.0.1",
+    "langfuse==3.10.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+docgen = "docgen.main:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["docgen*"]

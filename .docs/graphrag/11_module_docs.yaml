@@ -1,0 +1,568 @@
+- module: Public API Layer
+  description: Public interfaces for indexing, prompt tuning, and querying GraphRAG.
+    These define the library-facing API used by clients and other subsystems.
+  docstring: 'Public API surface for GraphRAG. This module defines the library-facing
+    entry points that enable clients to index data, generate indexing prompts, and
+    perform queries against GraphRAG. It coordinates the public interfaces exposed
+    by graphrag.api.index, graphrag.api.prompt_tune, and graphrag.api.query, providing
+    a cohesive surface for library users.
+
+
+    Architectural purpose
+
+    - Expose and coordinate the GraphRAG public API across indexing, prompt tuning,
+    and querying subsystems.
+
+    - Re-export and document the primary entry points so clients interact with a stable
+    surface rather than internal implementations.
+
+    - Centralize high-level orchestration while delegating concrete work to the underlying
+    submodules.
+
+
+    Key components and responsibilities
+
+    - graphrag.api.index: Utilities to configure and run the GraphRAG indexing pipeline.
+    Responsibilities include resolving the final indexing method (_get_method) and
+    executing the indexing workflow against a GraphRagConfig (build_index).
+
+    - graphrag.api.prompt_tune: Utilities to generate indexing prompts for GraphRAG
+    prompt tuning. Exposes generate_indexing_prompts to assemble prompts from domain
+    content, entity types, entity relationships, and community reports.
+
+    - graphrag.api.query: Query interfaces for the GraphRAG API. Provides high-level
+    entry points to perform global, local, and drift searches, with both streaming
+    and non-streaming variants, coordinating with a GraphRagConfig and related data
+    structures.
+
+
+    Main entry points / public APIs
+
+    - _get_method, build_index (from graphrag.api.index): determine and execute the
+    appropriate indexing workflow.
+
+    - generate_indexing_prompts (from graphrag.api.prompt_tune): construct indexing
+    prompts by coordinating multiple prompt-generation components.
+
+    - on_context, global_search_streaming, global_search, multi_index_global_search,
+    basic_search, basic_search_streaming, drift_search, drift_search_streaming (from
+    graphrag.api.query): provide diverse query capabilities across contexts, global
+    and drift searches, with streaming and non-streaming variants.
+
+
+    Usage notes / side effects
+
+    - APIs rely on GraphRagConfig and related data structures; they may perform I/O,
+    streaming, and data transformations as part of their operations.
+
+    - Functions may raise library-defined runtime errors to signal misconfiguration
+    or invalid usage.
+
+
+    Args
+
+    - This module does not accept module-level arguments. Client usage occurs via
+    the exported functions described above.
+
+
+    Returns
+
+    - This module itself returns no value. Public API functions return results appropriate
+    to their operations (results, streams, or data structures) as implemented in their
+    respective components.
+
+
+    Raises
+
+    - RuntimeError and library-specific exceptions defined by graphrag.api may be
+    raised to indicate misconfiguration, invalid inputs, or usage errors.'
+  files:
+  - graphrag/api/__init__.py
+  - graphrag/api/index.py
+  - graphrag/api/prompt_tune.py
+  - graphrag/api/query.py
+- module: GraphRAG Command-Line Interface
+  description: CLI entry points and tooling to run indexing, querying, and prompt
+    tuning workflows via uv/poethepoet.
+  docstring: 'GraphRAG Command-Line Interface (CLI) for indexing, querying, and prompt
+    tuning workflows via uv/poethepoet.
+
+
+    Architectural purpose:
+
+    - Provide a Typer-based CLI layer that orchestrates project initialization, index
+    construction and updates, knowledge-graph queries, and prompt tuning workflows,
+    integrating with configuration, storage, logging, and the GraphRAG API.
+
+
+    Key components and responsibilities:
+
+    - graphrag.cli.main: Implements the core Typer-based command implementations and
+    helpers used by Graphrag''s CLI. It wires together project initialization, index
+    construction and updates, knowledge-graph queries, and prompt tuning workflows,
+    while also exposing the primary CLI entry points.
+
+    - graphrag.cli.index: GraphRag CLI indexing utilities. This module provides command-line
+    interfaces to run the GraphRag indexing and update pipelines, integrating with
+    the GraphRag API, console workflow callbacks, configuration loading and validation,
+    redaction utilities, and logging. It also defines signal handling and related
+    tooling.
+
+    - graphrag.cli.initialize: GraphRag CLI initialization utilities. Purpose: module
+    that provides the CLI entry point functionality to initialize a GraphRag project
+    at a given filesystem path by creating initial configuration files and preparing
+    prompt templates.
+
+    - graphrag.cli.prompt_tune: Asynchronous prompt tuning orchestration for the GraphRag
+    CLI. Purpose: this module exposes the prompt_tune coroutine which coordinates
+    configuration loading, chunking overrides, logging initialization, and indexing-prompt
+    generation for prompt tuning.
+
+    - graphrag.cli.query: GraphRag CLI query module. Overview: this module provides
+    the command-line interfaces to run GraphRag queries in multiple modes (global,
+    local, drift, and basic) with optional streaming and integrated configuration
+    and storage support.
+
+
+    Main entry points / public APIs:
+
+    - main.py: wildcard_match, path_autocomplete, completer, _initialize_cli, _query_cli,
+    _index_cli, _prompt_tune_cli, _update_cli
+
+    - index.py: handle_signal, _register_signal_handlers, _run_index, index_cli, update_cli
+
+    - initialize.py: initialize_project_at
+
+    - prompt_tune.py: prompt_tune
+
+    - query.py: on_context, run_streaming_search, _resolve_output_files, run_global_search,
+    run_local_search, run_drift_search, run_basic_search'
+  files:
+  - graphrag/cli/__init__.py
+  - graphrag/cli/main.py
+  - graphrag/cli/index.py
+  - graphrag/cli/initialize.py
+  - graphrag/cli/prompt_tune.py
+  - graphrag/cli/query.py
+- module: Indexing Engine Core & Workflows
+  description: Core indexing pipeline, graph construction, embedding, and update workflows
+    that build and maintain the knowledge graph index.
+  docstring: 'Indexing Engine Core & Workflows: Core indexing pipeline, graph construction,
+    embedding, and update workflows that build and maintain the knowledge graph index.
+
+
+    Architectural purpose
+
+    - This package implements the end-to-end GraphRAG-based indexing platform, including
+    the core pipeline, graph construction, embedding, and incremental update workflows
+    to build and maintain a knowledge graph index.
+
+
+    Key components and responsibilities
+
+    - graphrag/index/run/run_pipeline.py: Utilities for running the GraphRag index
+    run pipeline, including execution helpers, run state persistence, and output transfer
+    between storages. Public: run_pipeline; private: _dump_json, _copy_previous_output,
+    _run_pipeline.
+
+    - graphrag/index/run/utils.py: Utilities to assemble a run context, create a callback
+    chain, and derive update-related storage objects. Exports: create_callback_chain,
+    create_run_context, get_update_storages.
+
+    - graphrag/index/workflows/factory.py: GraphRag workflows factory for building
+    pipelines of workflow functions. Coordinates registration and construction of
+    pipelines, maintains a class-level registry of named WorkflowFunction callables,
+    and can assemble pipelines. Public: register, register_all, create_pipeline, register_pipeline;
+    Class: PipelineFactory.
+
+    - graphrag/index/workflows/load_input_documents.py: Load and manage input documents
+    for the GraphRag index workflow; supports multi-format ingestion (Plain Text, CSV,
+    JSON) with schema validation via InputConfig; parses into a standard pandas DataFrame
+    and persists to storage. Public API: load_input_documents, run_workflow.
+
+    - graphrag/index/workflows/update_text_embeddings.py: Module for updating text
+    embeddings during incremental index runs; defines run_workflow to update embeddings
+    based on incremental updates and persists results to storage, leveraging generate_text_embeddings
+    and write_table_to_storage.
+
+    - graphrag/index/workflows/create_base_text_units.py: Module to generate base
+    text units for GraphRAG indexing; utilities to convert input documents into base
+    text units by grouping texts, chunking, and applying optional metadata preprocessing;
+    exposes run_workflow.
+
+    - graphrag/index/workflows/update_entities_relationships.py: Utilities to update
+    entities and relationships during incremental index runs; defines _update_entities_and_relationships
+    and run_workflow to merge previous state with delta updates and update/merge relationships.
+
+    - graphrag/index/operations/create_graph.py: Utilities to construct NetworkX graphs
+    from tabular data; create_graph builds a Graph from a DataFrame of edges and optional
+    node attributes, with support for edge attributes and a node identifier column
+    parameter.
+
+    - graphrag/index/operations/embed_graph/embed_graph.py: Embed graphs into vector
+    space using node2vec; exposes embed_graph to map a NetworkX graph to embedding
+    vectors, with configuration support.
+
+    - graphrag/index/operations/embed_graph/embed_node2vec.py: Node2Vec-based embedding
+    for NetworkX graphs; function embed_node2vec computes node embeddings for Graphs
+    suitable for downstream tasks.
+
+    - graphrag/index/operations/compute_degree.py: Compute the degree of each node
+    in a NetworkX graph and return a pandas DataFrame.
+
+    - graphrag/index/operations/prune_graph.py: Prune graphs by filtering nodes and
+    edges by frequency, degree, and edge weights; exports _get_upper_threshold_by_std
+    and prune_graph.
+
+    - graphrag/index/validate_config.py: GraphRag configuration validation utility;
+    function validate_config_names.
+
+    - graphrag/index/typing/state.py: Typing/state module describing common state
+    representations used by the workflows.
+
+    - graphrag/index/operations/snapshot_graphml.py: Snapshot GraphMLs of graphs to
+    a storage backend; function snapshot_graphml.
+
+
+    Public entry points / main APIs
+
+    - Public entry points include run_pipeline (graphrag/index/run/run_pipeline.py)
+    and internal helpers (_dump_json, _copy_previous_output, _run_pipeline).
+
+    - Run utilities: create_callback_chain, create_run_context, get_update_storages
+    (graphrag/index/run/utils.py).
+
+    - Workflow factory and assembly: PipelineFactory and functions in graphrag/index/workflows/factory.py
+    (register, register_all, create_pipeline, register_pipeline).
+
+    - Public workflow entry points: load_input_documents.run_workflow, create_base_text_units.run_workflow,
+    update_text_embeddings.run_workflow, update_entities_relationships.run_workflow.
+
+    - Graph construction and embeddings: create_graph, embed_graph, embed_node2vec.
+
+    - Graph analysis: compute_degree.
+
+    - Graph pruning: prune_graph and helper _get_upper_threshold_by_std.
+
+    - Configuration validation: validate_config_names.
+
+    - GraphML snapshot: snapshot_graphml.'
+  files:
+  - graphrag/index/run/run_pipeline.py
+  - graphrag/index/run/utils.py
+  - graphrag/index/workflows/factory.py
+  - graphrag/index/workflows/load_input_documents.py
+  - graphrag/index/workflows/update_text_embeddings.py
+  - graphrag/index/workflows/create_base_text_units.py
+  - graphrag/index/workflows/update_entities_relationships.py
+  - graphrag/index/operations/create_graph.py
+  - graphrag/index/operations/embed_graph/embed_graph.py
+  - graphrag/index/operations/embed_graph/embed_node2vec.py
+  - graphrag/index/operations/compute_degree.py
+  - graphrag/index/operations/prune_graph.py
+  - graphrag/index/validate_config.py
+  - graphrag/index/typing/state.py
+  - graphrag/index/operations/snapshot_graphml.py
+- module: Query Engine Core & Interfaces
+  description: Query-time context construction, data retrieval, and LLM orchestration
+    utilities used to answer questions against the knowledge graph.
+  docstring: "Query Engine Core & Interfaces for Graphrag: query-time context construction,\
+    \ data retrieval, and LLM orchestration utilities used to answer questions against\
+    \ the knowledge graph.\n\nArchitectural overview\n- Provides a cohesive framework\
+    \ to construct DRIFT-ready context, extract and map entities from queries, orchestrate\
+    \ structured global search workflows, and support LLM-based answer generation\
+    \ against a knowledge graph.\n- Comprises builders, utilities, and prompts that\
+    \ together enable end-to-end query answering from context construction to result\
+    \ synthesis. It relies on pandas for context representation (DataFrame) where\
+    \ appropriate.\n\nKey components and responsibilities\n- graphrag/query/context_builder/builders.py:\
+    \ Module for constructing DRIFT context used to prime downstream search actions\
+    \ for a given query. This module defines an abstract interface and concrete builders\
+    \ that assemble the context required by DRIFT-based search processes. It relies\
+    \ on pandas for context representation (DataFrame).\n- graphrag/query/context_builder/local_context.py:\
+    \ Utilities for constructing context data for graph-based prompt systems. Purpose:\
+    \ This module provides helper functions to assemble context data tables (entities,\
+    \ covariates, and relationships) into text blocks and structured DataFrames suitable\
+    \ for inclusion in system prompts.\n  Functions: build_entity_context, build_covariates_context,\
+    \ get_candidate_context, _filter_relationships, build_relationship_context\n-\
+    \ graphrag/query/context_builder/entity_extraction.py: Graphrag query context:\
+    \ entity extraction utilities for mapping user queries to Entity objects using\
+    \ vector stores and a relationship graph. Overview This module provides utilities\
+    \ to extract entities from a user query and map them to Entity objects within\
+    \ Graphrag's query context.\n  Functions: from_string, find_nearest_neighbors_by_entity_rank,\
+    \ map_query_to_entities\n  Classes: EntityVectorStoreKey\n- graphrag/query/structured_search/global_search/search.py:\
+    \ Module implementing a structured global search workflow that orchestrates parallel\
+    \ batches of community report summaries, maps each batch to an answer, and reduces\
+    \ the results into a final user-facing response using a language model. This module\
+    \ exposes the GlobalSearch class, which coordinates initialization, streaming,\
+    \ and reduction of search results.\n  Functions: __init__, search, _map_response_single_batch,\
+    \ _stream_reduce_response, stream_search, _reduce_response, _parse_search_response\n\
+    \  Classes: GlobalSearch\n- graphrag/query/llm/text_utils.py: Utilities for batching,\
+    \ JSON cleaning/parsing, and token-based text chunking to support LLM workflows.\
+    \ This module provides helpers to: - batch data into fixed-size chunks for batched\
+    \ LLM prompts or processing (batched) - repair and parse JSON-like content produced\
+    \ by language models into native Py...\n  Functions: batched, try_parse_json_object,\
+    \ chunk_text\n- graphrag/prompts/query/global_search_knowledge_system_prompt.py:\
+    \ Prompt definition for the knowledge system in global search scenarios.\n- graphrag/prompts/query/local_search_system_prompt.py:\
+    \ Prompt definition for local search system prompts.\n- graphrag/prompts/query/question_gen_system_prompt.py:\
+    \ Prompt definition for question generation to guide LLMs.\n\nMain entry points\
+    \ / public APIs\n- Context builders\n  - DRIFTContextBuilder, BasicContextBuilder,\
+    \ GlobalContextBuilder, LocalContextBuilder (graphrag/query/context_builder/builders.py)\n\
+    \  - build_context (as part of the DRIFT context construction workflow)\n- Local\
+    \ context utilities\n  - build_entity_context, build_covariates_context, get_candidate_context,\
+    \ _filter_relationships, build_relationship_context (graphrag/query/context_builder/local_context.py)\n\
+    - Entity extraction and mapping\n  - from_string, find_nearest_neighbors_by_entity_rank,\
+    \ map_query_to_entities (graphrag/query/context_builder/entity_extraction.py)\n\
+    \  - EntityVectorStoreKey (graphrag/query/context_builder/entity_extraction.py)\n\
+    - Structured global search orchestration\n  - GlobalSearch class (graphrag/query/structured_search/global_search/search.py)\n\
+    \  - __init__, search, stream_search, _parse_search_response, _map_response_single_batch,\
+    \ _reduce_response, _stream_reduce_response (graphrag/query/structured_search/global_search/search.py)\n\
+    - LLM text utilities\n  - batched, try_parse_json_object, chunk_text (graphrag/query/llm/text_utils.py)\n\
+    - Prompts\n  - graphrag/prompts/query/global_search_knowledge_system_prompt.py\n\
+    \  - graphrag/prompts/query/local_search_system_prompt.py\n  - graphrag/prompts/query/question_gen_system_prompt.py\n\
+    \nThis module serves as the architectural hub for the Graphrag query experience,\
+    \ wiring together context construction, entity grounding, structured search orchestration,\
+    \ and LLM-driven response synthesis for answering questions against the knowledge\
+    \ graph."
+  files:
+  - graphrag/query/__init__.py
+  - graphrag/query/context_builder/builders.py
+  - graphrag/query/context_builder/local_context.py
+  - graphrag/query/context_builder/entity_extraction.py
+  - graphrag/query/structured_search/global_search/search.py
+  - graphrag/query/llm/text_utils.py
+  - graphrag/prompts/query/global_search_knowledge_system_prompt.py
+  - graphrag/prompts/query/local_search_system_prompt.py
+  - graphrag/prompts/query/question_gen_system_prompt.py
+- module: Knowledge Graph Data Model
+  description: Core data structures and schemas that represent documents, entities,
+    relationships, communities, and associated metadata in the knowledge graph.
+  docstring: 'Knowledge Graph Data Model
+
+
+    Architectural purpose:
+
+    Core data structures and schemas that represent documents, entities, relationships,
+    communities, and associated metadata in the knowledge graph, enabling serialization/deserialization
+    and consistent data modeling across the GraphRag domain.
+
+
+    Key components and responsibilities:
+
+    - graphrag/data_model/document.py: Document dataclass model; factory to build
+    Document instances from dictionaries with configurable key mappings; exports Document
+    and from_dict.
+
+    - graphrag/data_model/entity.py: Entity dataclass; from_dict for deserializing
+    Entity from dictionaries with configurable key mappings for identifiers, metadata,
+    embeddings, and more.
+
+    - graphrag/data_model/relationship.py: Relationship dataclass; from_dict constructor
+    to instantiate from external data formats; public API includes Relationship and
+    from_dict.
+
+    - graphrag/data_model/community.py: Community dataclass; extends Named; represents
+    a Community with identity, naming semantics, metadata and relationships.
+
+    - graphrag/data_model/community_report.py: CommunityReport dataclass; inherits
+    Named; from_dict constructor for building instances representing community reports.
+
+    - graphrag/data_model/text_unit.py: TextUnit dataclass; encapsulates a unit of
+    text with associated identifiers linking to entities, relationships, covariates,
+    and related documents; inherits from Id...
+
+    - graphrag/data_model/schemas.py and graphrag/data_model/types.py: Schema and
+    type definitions that underpin the data models.
+
+
+    Main entry points / public APIs:
+
+    - Document.from_dict
+
+    - Entity.from_dict
+
+    - Relationship.from_dict
+
+    - Community.from_dict
+
+    - CommunityReport.from_dict
+
+    - TextUnit.from_dict
+
+    - The Document, Entity, Relationship, Community, CommunityReport, and TextUnit
+    dataclasses
+
+
+    Notes:
+
+    - This module aggregates the core data models used to represent graph constructs
+    and their metadata in the GraphRag system.'
+  files:
+  - graphrag/data_model/document.py
+  - graphrag/data_model/entity.py
+  - graphrag/data_model/relationship.py
+  - graphrag/data_model/community.py
+  - graphrag/data_model/community_report.py
+  - graphrag/data_model/text_unit.py
+  - graphrag/data_model/schemas.py
+  - graphrag/data_model/types.py
+- module: AI Orchestration & LLM Providers
+  description: Abstractions and backends for language models, tokenization, and LLM
+    service management used across indexing and querying.
+  docstring: "Abstractions and backends for language models, tokenization, and LLM\
+    \ service orchestration used across indexing and querying.\n\nArchitectural purpose\n\
+    Provide an extensible, registry-based framework to register, instantiate, and\
+    \ manage chat and embedding LLM backends, decoupling model providers from Graphrag's\
+    \ language-model stack and enabling on-demand creation and lifecycle management.\n\
+    \nKey components and responsibilities\n- graphrag/language_model/__init__.py:\
+    \ module surface that exposes the language_model package.\n- graphrag/language_model/factory.py:\
+    \ ModelFactory with registries for embedding and chat models; exposes API to register\
+    \ model backends and instantiate models by type.\n- graphrag/language_model/manager.py:\
+    \ ModelManager singleton for on-demand creation, registration, retrieval, and\
+    \ listing of ChatModel and EmbeddingModel instances; delegates instantiation to\
+    \ ModelFactory.\n- graphrag/language_model/providers/fnllm/models.py: FNLLM-based\
+    \ providers for embeddings and chat (OpenAI and Azure OpenAI); concrete classes:\
+    \ OpenAIEmbeddingFNLLM, OpenAIChatFNLLM, AzureOpenAIEmbeddingFNLLM, AzureOpenAIChatFNLLM.\n\
+    - graphrag/language_model/providers/fnllm/utils.py: Utilities for FNLLM OpenAI\
+    \ provider; helpers for error handling, coroutine execution, model parameter derivation,\
+    \ and OpenAI config.\n- graphrag/language_model/providers/litellm/chat_model.py:\
+    \ Graphrag Litellm chat model wrapper with streaming, caching, and resilience\
+    \ features; class: LitellmChatModel.\n- graphrag/language_model/providers/litellm/embedding_model.py:\
+    \ Litellm embedding wrapper for vector endpoints; class: LitellmEmbeddingModel.\n\
+    - graphrag/language_model/response/base.py: Typed containers for LLM provider\
+    \ responses; classes: ModelResponse, ModelOutput; helpers: output, history, parsed_response,\
+    \ content, full_response.\n\nMain entry points / public APIs\n- ModelFactory:\
+    \ registry-based factory for creating chat and embedding backends. Exposed API\
+    \ surface includes:\n  - register_embedding\n  - get_embedding_models\n  - create_chat_model\n\
+    \  - is_supported_model\n  - is_supported_chat_model\n  - create_embedding_model\n\
+    \  - is_supported_embedding_model\n  - get_chat_models\n- ModelManager: singleton\
+    \ coordinating lifecycle of model instances; exposed methods include:\n  - get_or_create_chat_model\n\
+    \  - list_chat_models\n  - remove_chat\n  - list_embedding_models\n  - get_chat_model\n\
+    \  - get_or_create_embedding_model\n  - get_instance\n  - register_embedding\n\
+    - Provider classes:\n  - OpenAIEmbeddingFNLLM\n  - OpenAIChatFNLLM\n  - AzureOpenAIEmbeddingFNLLM\n\
+    \  - AzureOpenAIChatFNLLM\n  - LitellmEmbeddingModel\n  - LitellmChatModel\n-\
+    \ Response containers and helpers:\n  - ModelResponse\n  - ModelOutput\n  - output\n\
+    \  - history\n  - parsed_response\n  - content\n  - full_response\n\nNotes\n-\
+    \ Public API methods document parameter expectations, return values, and possible\
+    \ errors in their own docstrings; this module-level docstring provides architectural\
+    \ context and a high-level API surface.\n- Implementations may raise runtime errors\
+    \ such as unsupported model types or invalid configurations; refer to individual\
+    \ components for exact exceptions and handling.\n\nImplementation details\n- Implementation\
+    \ specifics are trimmed from this docstring; see the respective module and class\
+    \ docstrings for behavior, parameters, returns, and error handling."
+  files:
+  - graphrag/language_model/__init__.py
+  - graphrag/language_model/factory.py
+  - graphrag/language_model/manager.py
+  - graphrag/language_model/providers/fnllm/models.py
+  - graphrag/language_model/providers/fnllm/utils.py
+  - graphrag/language_model/providers/litellm/chat_model.py
+  - graphrag/language_model/providers/litellm/embedding_model.py
+  - graphrag/language_model/response/base.py
+- module: Storage & Vector Store Integrations
+  description: Storage abstractions and concrete implementations for file/blob storage
+    and vector stores (LanceDB, Cosmos, Azure AI Search, etc.).
+  docstring: 'Storage and vector store integrations for GraphRAG.
+
+
+    Architectural purpose
+
+    Provide pluggable storage backends for pipeline data and results, including filesystem-based
+    and Azure Blob Storage-backed storage, together with vector store backends that
+    support text- and vector-based retrieval for GraphRAG.
+
+
+    Key components and responsibilities
+
+    - graphrag.storage.file_pipeline_storage.FilePipelineStorage: filesystem-backed
+    implementation of the PipelineStorage interface. Manages a root directory (creating
+    it if necessary) and offers operations to read, write, clear, list keys, and filter
+    or traverse items.
+
+    - graphrag.storage.blob_pipeline_storage.BlobPipelineStorage: Azure Blob Storage-backed
+    implementation of the PipelineStorage interface used to cache pipeline results
+    and data. Stores dataframe exports as JSON (and Parquet) where applicable; provides
+    helpers like _abfs_url, _set_df_json, _set_df_parquet, and operations such as
+    find, clear, get, and _create_container.
+
+    - graphrag.vector_stores.lancedb.LanceDBVectorStore: LanceDB-backed vector store
+    for GraphRAG. Supports similarity search by text and by vector, loading documents,
+    filtering by id, and connection management.
+
+    - graphrag.vector_stores.cosmosdb.CosmosDBVectorStore: Cosmos DB-backed vector
+    store. Supports text- and vector-based retrieval, loading documents, filtering
+    by id, and internal utilities like cosine_similarity, _create_database, _create_container.
+
+    - graphrag.vector_stores.azure_ai_search.AzureAISearchVectorStore: Azure AI Search-backed
+    vector store. Supports similarity search by vector and text, loading documents,
+    and id-based filtering; connects to the Azure Cognitive Search index.
+
+
+    - graphrag.vector_stores.factory.VectorStoreFactory: registry-based factory to
+    construct vector store instances from registered implementations. Maintains a
+    registry mapping vector_store_type keys to creator callables. Provides create_vector_store,
+    get_vector_store_types, is_supported_type, and register.
+
+
+    Main entry points / public APIs
+
+    - FilePipelineStorage and BlobPipelineStorage as storage backends for GraphRAG
+    pipelines.
+
+    - LanceDBVectorStore, CosmosDBVectorStore, AzureAISearchVectorStore as concrete
+    vector store implementations.
+
+    - VectorStoreFactory (and its public methods) to instantiate vector stores from
+    registered types.'
+  files:
+  - graphrag/storage/__init__.py
+  - graphrag/storage/file_pipeline_storage.py
+  - graphrag/storage/blob_pipeline_storage.py
+  - graphrag/vector_stores/__init__.py
+  - graphrag/vector_stores/factory.py
+  - graphrag/vector_stores/lancedb.py
+  - graphrag/vector_stores/cosmosdb.py
+  - graphrag/vector_stores/azure_ai_search.py
+- module: Unified Search App (Demo UI)
+  description: Demo UI and data loading components for Unified Search, built around
+    the GraphRAG index and results visualization.
+  docstring: "Unified Search App (Demo UI) - Demo UI and data loading components for\
+    \ Unified Search, built around the GraphRAG index and results visualization.\n\
+    \nPurpose:\n    Provide a cohesive client-side dashboard and data-loading stack\
+    \ that orchestrates dataset loading, knowledge model provisioning, multiple search\
+    \ strategies (global, local, drift, and basic), question generation, and visualization\
+    \ using the GraphRAG framework. This module ties together the demo UI (Streamlit-based)\
+    \ with the knowledge-loader stack and GraphRAG visualization components to enable\
+    \ end-to-end experimentation and demonstration.\n\nArchitecture:\n    - app: Streamlit-based\
+    \ UI and orchestration layer that wires the app logic to UI components (GraphRAG\
+    \ UI, questions, reports, side bar).\n    - knowledge_loader: data loading layer\
+    \ with support for blob and local storage, dataset discovery, and prompts.\n \
+    \   - rag: GraphRAG integration typings used across the app.\n    - ui: rendering\
+    \ utilities for search results, citations, HTML rendering, and graph visualizations.\n\
+    \    - data sources: default, blob_source, and loader utilities to construct and\
+    \ read knowledge data.\n\nPublic APIs:\n    - app_logic: load_knowledge_model;\
+    \ dataset_name; run_global_search_question_generation; run_global_search; run_drift_search;\
+    \ run_local_search; run_basic_search; run_generate_questions\n    - home_page:\
+    \ main; on_click_reset; on_change\n    - knowledge_loader.model: load_entities;\
+    \ load_entity_relationships; load_communities; load_covariates; load_community_reports;\
+    \ load_text_units; load_model\n    - knowledge_loader.data_sources.blob_source:\
+    \ BlobDatasource class with __init__, _get_container, load_blob_prompt_config,\
+    \ load_blob_file, read, read_settings\n    - knowledge_loader.data_sources.loader:\
+    \ _get_base_path; create_datasource; load_dataset_listing; load_prompts\n    -\
+    \ rag.typing: type definitions for GraphRAG integration\n    - ui.search: init_search_ui;\
+    \ render_html_table; convert_numbered_list_to_array; format_response_hyperlinks_by_key;\
+    \ get_ids_per_key; format_suggested_questions; format_response_hyperlinks; display_citations\n\
+    \    - ui.sidebar: update_basic_rag; reset_app; update_global_search; lookup_label;\
+    \ update_drift_search; update_local_search; create_side_bar; update_dataset\n\
+    \    - ui.full_graph: create_full_graph_ui"
+  files:
+  - unified-search-app/app/__init__.py
+  - unified-search-app/app/app_logic.py
+  - unified-search-app/app/home_page.py
+  - unified-search-app/app/knowledge_loader/model.py
+  - unified-search-app/app/knowledge_loader/data_sources/default.py
+  - unified-search-app/app/knowledge_loader/data_sources/blob_source.py
+  - unified-search-app/app/knowledge_loader/data_sources/loader.py
+  - unified-search-app/app/rag/typing.py
+  - unified-search-app/app/ui/search.py
+  - unified-search-app/app/ui/sidebar.py
+  - unified-search-app/app/ui/full_graph.py

@@ -1,0 +1,112 @@
+summary: 'Repository Purpose: GraphRAG is a Python-based data pipeline and knowledge-graph
+  augmentation framework that indexes unstructured private text, extracts entities
+  and relations, builds a hierarchical knowledge graph, and uses LLMs to answer questions
+  with context-augmented prompts. It provides modular components for indexing, prompt
+  tuning, querying, and visualization, enabling researchers and developers to experiment
+  with retrieval-augmented reasoning over private datasets.
+
+  Tech Stack: Python, uv (task runner), poethepoet (build scripts), Streamlit (Unified
+  Search UI)'
+modules:
+- name: Public API Layer
+  description: Public interfaces for indexing, prompt tuning, and querying GraphRAG.
+    These define the library-facing API used by clients and other subsystems.
+  files:
+  - graphrag/graphrag/api/__init__.py
+  - graphrag/graphrag/api/index.py
+  - graphrag/graphrag/api/prompt_tune.py
+  - graphrag/graphrag/api/query.py
+- name: GraphRAG Command-Line Interface
+  description: CLI entry points and tooling to run indexing, querying, and prompt
+    tuning workflows via uv/poethepoet.
+  files:
+  - graphrag/graphrag/cli/__init__.py
+  - graphrag/graphrag/cli/main.py
+  - graphrag/graphrag/cli/index.py
+  - graphrag/graphrag/cli/initialize.py
+  - graphrag/graphrag/cli/prompt_tune.py
+  - graphrag/graphrag/cli/query.py
+- name: Indexing Engine Core & Workflows
+  description: Core indexing pipeline, graph construction, embedding, and update workflows
+    that build and maintain the knowledge graph index.
+  files:
+  - graphrag/graphrag/index/run/run_pipeline.py
+  - graphrag/graphrag/index/run/utils.py
+  - graphrag/graphrag/index/workflows/factory.py
+  - graphrag/graphrag/index/workflows/load_input_documents.py
+  - graphrag/graphrag/index/workflows/update_text_embeddings.py
+  - graphrag/graphrag/index/workflows/create_base_text_units.py
+  - graphrag/graphrag/index/workflows/update_entities_relationships.py
+  - graphrag/graphrag/index/operations/create_graph.py
+  - graphrag/graphrag/index/operations/embed_graph/embed_graph.py
+  - graphrag/graphrag/index/operations/embed_graph/embed_node2vec.py
+  - graphrag/graphrag/index/operations/compute_degree.py
+  - graphrag/graphrag/index/operations/prune_graph.py
+  - graphrag/graphrag/index/validate_config.py
+  - graphrag/graphrag/index/typing/state.py
+  - graphrag/graphrag/index/operations/snapshot_graphml.py
+- name: Query Engine Core & Interfaces
+  description: Query-time context construction, data retrieval, and LLM orchestration
+    utilities used to answer questions against the knowledge graph.
+  files:
+  - graphrag/graphrag/query/__init__.py
+  - graphrag/graphrag/query/context_builder/builders.py
+  - graphrag/graphrag/query/context_builder/local_context.py
+  - graphrag/graphrag/query/context_builder/entity_extraction.py
+  - graphrag/graphrag/query/structured_search/global_search/search.py
+  - graphrag/graphrag/query/llm/text_utils.py
+  - graphrag/graphrag/prompts/query/global_search_knowledge_system_prompt.py
+  - graphrag/graphrag/prompts/query/local_search_system_prompt.py
+  - graphrag/graphrag/prompts/query/question_gen_system_prompt.py
+- name: Knowledge Graph Data Model
+  description: Core data structures and schemas that represent documents, entities,
+    relationships, communities, and associated metadata in the knowledge graph.
+  files:
+  - graphrag/graphrag/data_model/document.py
+  - graphrag/graphrag/data_model/entity.py
+  - graphrag/graphrag/data_model/relationship.py
+  - graphrag/graphrag/data_model/community.py
+  - graphrag/graphrag/data_model/community_report.py
+  - graphrag/graphrag/data_model/text_unit.py
+  - graphrag/graphrag/data_model/schemas.py
+  - graphrag/graphrag/data_model/types.py
+- name: AI Orchestration & LLM Providers
+  description: Abstractions and backends for language models, tokenization, and LLM
+    service management used across indexing and querying.
+  files:
+  - graphrag/graphrag/language_model/__init__.py
+  - graphrag/graphrag/language_model/factory.py
+  - graphrag/graphrag/language_model/manager.py
+  - graphrag/graphrag/language_model/providers/fnllm/models.py
+  - graphrag/graphrag/language_model/providers/fnllm/utils.py
+  - graphrag/graphrag/language_model/providers/litellm/chat_model.py
+  - graphrag/graphrag/language_model/providers/litellm/embedding_model.py
+  - graphrag/graphrag/language_model/response/base.py
+- name: Storage & Vector Store Integrations
+  description: Storage abstractions and concrete implementations for file/blob storage
+    and vector stores (LanceDB, Cosmos, Azure AI Search, etc.).
+  files:
+  - graphrag/graphrag/storage/__init__.py
+  - graphrag/graphrag/storage/file_pipeline_storage.py
+  - graphrag/graphrag/storage/blob_pipeline_storage.py
+  - graphrag/graphrag/vector_stores/__init__.py
+  - graphrag/graphrag/vector_stores/factory.py
+  - graphrag/graphrag/vector_stores/lancedb.py
+  - graphrag/graphrag/vector_stores/cosmosdb.py
+  - graphrag/graphrag/vector_stores/azure_ai_search.py
+- name: Unified Search App (Demo UI)
+  description: Demo UI and data loading components for Unified Search, built around
+    the GraphRAG index and results visualization.
+  files:
+  - graphrag/unified-search-app/app/__init__.py
+  - graphrag/unified-search-app/app/app_logic.py
+  - graphrag/unified-search-app/app/home_page.py
+  - graphrag/unified-search-app/app/knowledge_loader/model.py
+  - graphrag/unified-search-app/app/knowledge_loader/data_sources/default.py
+  - graphrag/unified-search-app/app/knowledge_loader/data_sources/blob_source.py
+  - graphrag/unified-search-app/app/knowledge_loader/data_sources/loader.py
+  - graphrag/unified-search-app/app/rag/typing.py
+  - graphrag/unified-search-app/app/ui/search.py
+  - graphrag/unified-search-app/app/ui/sidebar.py
+  - graphrag/unified-search-app/app/ui/full_graph.py
+

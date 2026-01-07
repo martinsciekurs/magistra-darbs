@@ -1,0 +1,568 @@
+sections:
+- slug: introduction
+  title: Introduction
+  content: 'GraphRAG is a Python-based data pipeline and knowledge-graph augmentation
+    framework designed to help you index unstructured private text, extract entities
+    and relations, and build a hierarchical knowledge graph. It then uses large language
+    models (LLMs) to answer questions with context-augmented prompts, enabling retrieval-augmented
+    reasoning over private datasets. The project provides modular components for indexing,
+    prompt tuning, querying, and visualization, making it suitable for researchers
+    and developers who want to experiment with graph-enabled reasoning on proprietary
+    text.
+
+
+    Key concepts and workflow at a glance:
+
+    - Indexing: Slice input text into fine-grained TextUnits, use LLM-driven prompts
+    to extract entities (with configurable entity types), relationships, and optionally
+    claims (factual assertions linked to source text), and organize them into a knowledge
+    graph.
+
+    - Prompt templates: Customizable prompt files for entity extraction, relationship
+    extraction, and community report generation. Templates use token substitution
+    (e.g., {entity_types}, {tuple_delimiter}) for domain adaptation.
+
+    - Ontology: Represent documents, entities, relationships, and communities with
+    a coherent data model and schemas.
+
+    - Graph structure: Build a hierarchical community graph with summaries, enabling
+    holistic and domain-focused reasoning.
+
+    - Prompt augmentation: Leverage the graph, community summaries, and entity context
+    to augment LLM prompts at query time. Default prompts can be overridden via custom
+    prompt files.
+
+    - AI orchestration: Abstracted LLM providers and tokenization backends enable
+    flexible model backends and lifecycle management. Supports OpenAI-compatible
+    endpoints via api_base and proxy configuration for non-OpenAI models.
+
+    - Storage and retrieval: Pluggable storage backends and vector stores support
+    private data handling and scalable retrieval.
+
+    - End-to-end workflows: Clear workflows for data ingestion, graph construction,
+    embedding, updates, and answering questions.
+
+
+    This documentation summarizes the project, its goals, and the core concepts behind
+    GraphRAG, with a focus on how its modular components come together to enable sophisticated
+    retrieval-augmented reasoning over private text.'
+- slug: quick-start
+  title: Quick Start
+  content: 'This Quick Start guide provides a practical tour to install and begin
+    using GraphRAG, covering setup, indexing, prompt tuning, and querying workflows.
+    It is designed to get you from zero to an actionable index and query flow as quickly
+    as possible.
+
+
+    Prerequisites
+
+    - Python 3.10–3.12
+
+    - uv (the task runner) for dependency management and workflow orchestration
+
+
+    1) Install dependencies
+
+    ```
+
+    uv sync
+
+    ```
+
+
+    2) Initialize a project/workspace
+
+    This creates a settings file and environment configuration. Replace [path] with
+    your working directory.
+
+    ```
+
+    graphrag init --root [path] --force
+
+    ```
+
+
+    3) Prepare your dataset
+
+    Create a folder with input text files, e.g. a simple example:
+
+    ```
+
+    [path]/input/book.txt
+
+    ```
+
+    You can adapt this to your private dataset; the indexing engine will process documents
+    into TextUnits and extract entities/relationships.
+
+
+    4) Configure a backend (OpenAI or Azure OpenAI)
+
+    - OpenAI: set GRAPHRAG_API_KEY in the generated .env.
+
+    - Azure OpenAI: configure chat and embedding model blocks in settings.yaml (api_base,
+    api_version, deployment_name, etc.).
+
+
+    5) Run the indexing workflow
+
+    ```
+
+    graphrag index --root [path]
+
+    ```
+
+    Or, depending on your setup, you may see project-specific commands via uv/poethepoet
+    integration.
+
+
+    6) Prompt tuning (optional but recommended for best results)
+
+    ```
+
+    uv run poe prompt_tune --root [path]
+
+    ```
+
+
+    7) Query the index
+
+    ```
+
+    uv run poe query --root [path] --query "What are the top themes in this dataset?"
+
+    ```
+
+
+    8) Next steps
+
+    - Inspect the output directory for graph data and parquet artifacts.
+
+    - Try different query modes (global, local, DRIFT, or basic) to compare results.
+
+    - Use the Unified Search Demo UI (if available) for interactive exploration.
+
+
+    For hands-on examples and a walkthrough, see the Getting Started guide in the
+    docs.'
+- slug: architecture
+  title: Architecture
+  content: 'GraphRAG is composed of modular components that interact to index data,
+    construct a knowledge graph, and answer questions with LLMs. The architecture
+    emphasizes separation of concerns, extensibility, and pluggable backends.
+
+
+    Core modular components
+
+    - Public API Layer: Public interfaces for indexing, prompt tuning, and querying
+    GraphRAG. File set: graphrag/graphrag/api/__init__.py, index.py, prompt_tune.py,
+    query.py. This layer defines the library-facing API used by clients and subsystems.
+
+    - GraphRAG Command-Line Interface (CLI): Typer-based CLI that orchestrates indexing,
+    prompt tuning, and querying workflows via uv/poethepoet. Files: graphrag/graphrag/cli/__init__.py,
+    main.py, index.py, initialize.py, prompt_tune.py, query.py.
+
+    - Indexing Engine Core & Workflows: End-to-end data ingestion, graph construction,
+    embedding, and update workflows that build and maintain the knowledge graph index.
+    Key files include run_pipeline.py, utils.py, factory.py, and several workflows
+    like load_input_documents.py, update_text_embeddings.py, create_base_text_units.py,
+    update_entities_relationships.py, and operations for graph creation and embedding.
+
+    - Query Engine Core & Interfaces: Query-time context construction, data retrieval,
+    and LLM orchestration utilities used to answer questions against the graph. Files
+    cover context builders, local/entity extraction, global search, and LLM prompts.
+
+    - Knowledge Graph Data Model: Core data structures representing documents, entities,
+    relationships, communities, and metadata. Includes models such as document.py,
+    entity.py, relationship.py, community.py, text_unit.py, schemas.py, and types.py.
+
+    - AI Orchestration & LLM Providers: Abstractions and backends for language models
+    and tokenization. A registry-based framework decouples providers from GraphRAG’s
+    stack, enabling on-demand creation and lifecycle management. Implementations live
+    under graphrag/language_model and graphrag/language_model/providers.
+
+    - Storage & Vector Stores: Storage abstractions and concrete implementations for
+    file/blob storage and vector stores (LanceDB, Cosmos, Azure AI Search, etc.).
+    Core components include FilePipelineStorage, BlobPipelineStorage, and vector_store
+    backends behind a factory. See graphrag/storage and graphrag/vector_stores.
+
+    - Unified Search App (Demo UI): A demo UI built around the GraphRAG index for
+    visualization and interactive search, tying together data loading, knowledge loading,
+    multiple search strategies, and result visualization.
+
+
+    How the components interact
+
+    1) Ingestion: The Indexing Engine ingests documents, splits them into TextUnits,
+    and extracts entities/relationships to populate the Knowledge Graph Data Model.
+
+    2) Graph construction: The indexing flow builds a hierarchical community graph
+    using the Leiden algorithm with configurable parameters,
+    computes degrees, and stores graph snapshots (e.g., graphml) for visualization.
+
+    3) Embedding & storage: Embeddings are computed and written to the selected vector
+    store; document/text units and graph artifacts are stored via the Storage layer.
+
+    4) Prompt augmentation: During queries, the Query Engine constructs DRIFT/global/local
+    contexts and uses system prompts to guide the LLM, augmented with graph structure
+    and community summaries.
+
+    5) Query & reasoning: The LLMs generate answers with access to the context built
+    from the graph and embeddings, enabling retrieval-augmented reasoning.
+
+    6) Visualization: The Unified Search App provides a demo UI for exploring the
+    index and querying results.
+
+
+    This architecture supports modular replacement of providers and storage backends,
+    enabling experimentation across different model backends, vector stores, and storage
+    solutions while maintaining a consistent data model and workflow.'
+- slug: api-reference
+  title: API Reference
+  content: 'Public interfaces for indexing, prompt tuning, and querying GraphRAG are
+    organized under the Public API Layer. These interfaces define the library-facing
+    API used by clients and subsystems. The primary entry points are:
+
+
+    - Indexing API (graphrag/graphrag/api/index.py): Public interfaces for ingesting
+    documents, creating text units, and building the knowledge graph index. This layer
+    abstracts the end-to-end indexing workflow so that researchers and applications
+    can programmatically drive indexing with custom data sources.
+
+    - Prompt Tuning API (graphrag/graphrag/api/prompt_tune.py): Public interfaces
+    for generating and applying prompt-tuning configurations. This enables domain-specific
+    tuning of prompts used during query time or during index-time prompts.
+
+    - Query API (graphrag/graphrag/api/query.py): Public interfaces for composing
+    and executing questions against the knowledge graph. This layer orchestrates the
+    creation of retrieval contexts, optional global/local DRIFT reasoning, and LLM-backed
+    answers.
+
+
+    Usage patterns (high level)
+
+    - Initialize or obtain an API client, configure data sources, and call the indexing
+    API to ingest documents and build the graph.
+
+    - Provide tuning configurations or prompts, and use the prompt tuning API to adapt
+    prompts for specific domains.
+
+    - Use the query API to run questions against the index, leveraging context from
+    the graph and vector store for augmented reasoning.
+
+
+    Notes
+
+    - The exact function names and signatures are provided in the corresponding files:
+    graphrag/graphrag/api/index.py, graphrag/graphrag/api/prompt_tune.py, graphrag/graphrag/api/query.py.
+    This section documents the public API surface and its intended usage rather than
+    concrete implementation details.'
+- slug: cli-reference
+  title: CLI Reference
+  content: 'GraphRAG ships a Command-Line Interface (CLI) that drives indexing, prompt
+    tuning, and querying workflows. The CLI is designed to orchestrate project initialization,
+    index construction and updates, knowledge-graph queries, and prompt tuning workflows,
+    integrating configuration, storage, logging, and the API.
+
+
+    Key concepts
+
+    - Typer-based command structure for a clean, scriptable interface.
+
+    - Commands to initialize a project, run the indexer, tune prompts, and query the
+    index from the command line.
+
+
+    Common commands (examples)
+
+    - Initialize a project and config:
+
+    ```
+
+    graphrag init --root ./christmas --force
+
+    ```
+
+
+    - Run the indexing workflow for a dataset:
+
+    ```
+
+    graphrag index --root ./christmas
+
+    ```
+
+
+    - Tune prompts for a dataset:
+
+    ```
+
+    uv run poe prompt_tune --root ./christmas
+
+    ```
+
+
+    - Execute a query against the index:
+
+    ```
+
+    uv run poe query --root ./christmas --query "What are the top themes in this dataset?"
+
+    ```
+
+
+    Note: The CLI relies on the underlying workflow orchestration configured in settings.yaml
+    and uses the same modular components as the API layer. For more detailed command
+    semantics and available options, see the CLI documentation pages in docs/cli.md
+    and the source files listed under graphrag/graphrag/cli/.*.'
+- slug: data-model-ontology
+  title: Data Model & Ontology
+  content: 'Core data structures and schemas define how GraphRAG represents content
+    inside the knowledge graph. The ontology enables serialization/deserialization
+    and consistent data modeling across the GraphRAG domain. Key data model components
+    and their roles include:
+
+
+    - Document: Represents a source document or input corpus with metadata and text
+    content. Provides a factory to build Document instances from dictionaries and
+    maps to the internal storage/graph structures.
+
+    - TextUnit: Fine-grained analyzable units derived from documents, used for extraction
+    and indexing granularity.
+
+    - Entity: Represents an identified entity such as a person, place, organization,
+    or object, with attributes including title/name and identifiers.
+
+    - Relationship: Captures connections between entities with semantic typing (e.g.,
+    description of the relationship), edge weights for ranking, and source/target
+    references.
+
+    - Community: Represents clusters or groups within the graph discovered via hierarchical
+    Leiden algorithm, used to summarize and structure the graph hierarchy.
+
+    - CommunityReport: LLM-generated summaries of each community containing key entities,
+    relationships, and claims. Used as context for global search (map-reduce) queries.
+
+    - Schemas & Types: Shared schemas and type definitions that ensure consistent
+    data structures across modules.
+
+
+    Files involved (examples):
+
+    - graphrag/graphrag/data_model/document.py
+
+    - graphrag/graphrag/data_model/entity.py
+
+    - graphrag/graphrag/data_model/relationship.py
+
+    - graphrag/graphrag/data_model/community.py
+
+    - graphrag/graphrag/data_model/community_report.py
+
+    - graphrag/graphrag/data_model/text_unit.py
+
+    - graphrag/graphrag/data_model/schemas.py
+
+    - graphrag/graphrag/data_model/types.py
+
+
+    How the ontology is used
+
+    - Ingested documents are broken into TextUnits and mapped to Document metadata.
+
+    - Entities and relationships populate a graph, which is organized into communities
+    with summaries.
+
+    - The graph and community information are leveraged to construct context windows
+    for LLM prompts during queries, enabling more grounded and interpretable answers.
+
+
+    Output tables
+
+    - Documents table: Source documents with metadata and provenance.
+
+    - Entities table: Extracted entities with attributes, descriptions, and embeddings.
+
+    - Relationships table: Entity connections with semantic types and weights.
+
+    - Communities table: Hierarchical community clustering data from Leiden.
+
+    - Community reports table: LLM-generated summaries with metadata for each community.'
+- slug: ai-llm-providers
+  title: AI Orchestration & LLM Providers
+  content: 'GraphRAG abstracts language models, tokenization, and LLM service management
+    to decouple model backends from the rest of the system. This enables flexible
+    selection of providers, lifecycle management, and plug-and-play experimentation
+    with different model families.
+
+
+    Architectural purpose
+
+    - Registry-based framework to register, instantiate, and manage chat-based and
+    embedding LLM backends.
+
+    - Decoupling of model providers from GraphRAG’s core logic to support on-demand
+    creation and lifecycle management.
+
+
+    Key components and responsibilities
+
+    - language_model/__init__.py: Public surface exposing the language-model stack.
+
+    - language_model/factory.py: Factory for creating model backends based on configuration.
+
+    - language_model/manager.py: Orchestrates model lifecycles, hot swapping, and
+    resource management.
+
+    - language_model/providers/fnllm/models.py and utils.py: Implementations and utilities
+    for the FNLLM provider (functions for model interaction, tokenization, etc.).
+
+    - language_model/providers/litellm/*: Providers and utilities for LiteLLM-based
+    backends.
+
+    - Callback integration: Hooks for LLM responses, streaming, and logging (e.g.,
+    graphrag/callbacks/*).
+
+
+    What this enables
+
+    - Runtime choice of LLM provider (OpenAI, Azure OpenAI, local/offline models,
+    etc.).
+
+    - Independent tokenization and prompt handling suited to different backends.
+
+    - Safe lifecycle management including initialization, warm-up, and shutdown of
+    model instances.
+
+
+    Note: The actual provider implementations live under graphrag/language_model and
+    graphrag/language_model/providers. This section documents the intended role and
+    integration points rather than concrete provider details.'
+- slug: storage-vector-stores
+  title: Storage & Vector Stores
+  content: 'GraphRAG uses pluggable storage backends for both pipeline data and results,
+    along with vector stores that enable semantic retrieval in tandem with the knowledge
+    graph.
+
+
+    Storage abstractions
+
+    - File-based storage: A filesystem-backed pipeline storage that manages a root
+    directory for artifacts and outputs.
+
+    - Blob storage: BlobPipelineStorage for cloud-based blob storage integration.
+
+    - Factory and adapters: A storage factory to create endpoints based on configuration,
+    allowing users to plug in their own storage backend.
+
+
+    Vector stores and retrieval backends
+
+    - LanceDB: Local vector store backend optimized for fast experimentation and small
+    to medium datasets.
+
+    - Cosmos DB: Cloud-based vector store integration for scalable deployments.
+
+    - Azure AI Search: Cloud-based search service integration for hybrid text/semantic
+    search.
+
+
+    Where these are defined
+
+    - graphrag/storage/file_pipeline_storage.py
+
+    - graphrag/graphrag/storage/blob_pipeline_storage.py
+
+    - graphrag/graphrag/vector_stores/__init__.py
+
+    - graphrag/graphrag/vector_stores/factory.py
+
+    - graphrag/graphrag/vector_stores/lancedb.py
+
+    - graphrag/graphrag/vector_stores/cosmosdb.py
+
+    - graphrag/graphrag/vector_stores/azure_ai_search.py
+
+
+    Configuration hints
+
+    - Storage type and base_dir are configured in settings.yaml or environment variables
+    as part of the Storage configuration section.
+
+    - Vector store configuration is similarly supplied as part of the index/query
+    settings, enabling the system to write embeddings directly to the chosen vector
+    store during indexing.'
+- slug: workflows-indexing-query
+  title: Indexing & Query Workflows
+  content: 'End-to-end workflows define how data flows from ingestion to answering
+    questions against the knowledge graph. The workflows coordinate multiple components
+    to build, update, and query the index. Incremental indexing is supported for
+    updating indices with new data while preserving existing outputs.
+
+
+    Core workflows and components
+
+    - load_input_documents.py: Ingests input sources and prepares documents for indexing.
+
+    - create_base_text_units.py: Splits documents into TextUnits with configurable
+    chunk size and overlap; supports document boundary alignment.
+
+    - update_text_embeddings.py: Computes and updates embeddings for text units, feeding
+    the vector store.
+
+    - update_entities_relationships.py: Extracts and updates entities and relationships
+    in the graph, maintaining graph integrity.
+
+    - create_graph.py: Creates the graph structure from entities and relationships,
+    including community hierarchies.
+
+    - embed_graph/embed_graph.py: Embeds graph-level representations and prepares
+    graph-aware context for queries.
+
+    - embed_graph/embed_node2vec.py: Optional node2vec embeddings for enhanced graph
+    embeddings.
+
+    - compute_degree.py: Computes node degrees and centrality metrics for ranking
+    and visualization.
+
+    - prune_graph.py: Prunes the graph to remove duplicates or low-quality edges/nodes.
+
+    - snapshot_graphml.py: Outputs a GraphML snapshot for visualization tools.
+
+    - validate_config.py: Validates configuration in settings to ensure end-to-end
+    workflows can run.
+
+    - state.py: Internal state definitions for workflow orchestration.
+
+
+    End-to-end lifecycle
+
+    1) Ingestion: Load input documents and create base text units.
+
+    2) Embedding: Compute embeddings and push to the vector store; store text/metadata
+    artifacts.
+
+    3) Graph construction: Build the knowledge graph from entities, relationships,
+    and communities; update degrees and prune if necessary.
+
+    4) Description summarization: Summarize entity and relationship descriptions using
+    an LLM. Since entities/relationships may be found in many text units, each with
+    its own description, these are combined into a single concise summary per entity/relationship.
+
+    5) Graph enrichment: Generate community reports (LLM-generated summaries of each
+    community's entities, relationships, and claims) and graph-level features.
+
+    6) Query-time preparation: Assemble context using global (map-reduce over community
+    reports), local (entity-based context), or DRIFT strategies.
+
+    7) Question answering: Use LLM prompts augmented with context to generate answers.
+
+    8) Visualization and inspection: Export graph snapshots and enable exploration
+    via UI or GraphML files.
+
+
+    This orchestration enables researchers and developers to iterate on indexing strategies,
+    graph structures, and prompt design while maintaining a consistent workflow and
+    data model.'
+is_dynamic: true
+

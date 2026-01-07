@@ -1,0 +1,49 @@
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+.env.local
+.env.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Type checking
+.mypy_cache/
+.ruff_cache/
+
+# Logs
+*.log
+graphrag.log
+
+# Generated docs (uncomment to ignore)
+#.docs/
+
+# OS
+.DS_Store
+Thumbs.db
+tmp
+
+CLAUDE.md

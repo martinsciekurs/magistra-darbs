@@ -93,6 +93,17 @@ CHARTS:
 
 25_paired_comparison        - Paired bars with arrows: before/after.
                               Direct visual of improvement with direction arrows.
+
+26_delta_hitl               - Delta chart grouped by HITL status.
+                              Shows total improvement (0→2) comparing with/without HITL.
+                              Demonstrates substitution effect: models without HITL
+                              benefit more from reflections.
+
+27_delta_bez_hitl           - Same layout as 04 but for "Bez HITL" condition only.
+                              Shows Delta-1 and Delta-2 without human involvement.
+
+28_delta_ar_hitl            - Same layout as 04 but for "Ar HITL" condition only.
+                              Shows Delta-1 and Delta-2 with human involvement.
 """
 
 import matplotlib.pyplot as plt
@@ -241,12 +252,12 @@ for model in modeli:
         scores = df[(df['Modelis'] == model) & (df['HITL'] == hitl)].sort_values('Iterācija')['Kvalitāte'].values
         delta1 = scores[1] - scores[0]
         delta2 = scores[2] - scores[1]
-        delta_data.append({'Modelis': model, 'HITL': hitl, 'Delta': 'Delta-1 (0->1)', 'Uzlabojums': delta1})
-        delta_data.append({'Modelis': model, 'HITL': hitl, 'Delta': 'Delta-2 (1->2)', 'Uzlabojums': delta2})
+        delta_data.append({'Modelis': model, 'HITL': hitl, 'Delta': '1. pāreja (0→1)', 'Uzlabojums': delta1})
+        delta_data.append({'Modelis': model, 'HITL': hitl, 'Delta': '2. pāreja (1→2)', 'Uzlabojums': delta2})
 
 delta_df = pd.DataFrame(delta_data)
 
-plt.figure(figsize=(12, 6))
+plt.figure(figsize=(12, 7))
 barplot4 = sns.barplot(
     data=delta_df,
     x='Modelis',
@@ -256,10 +267,13 @@ barplot4 = sns.barplot(
     errorbar=None
 )
 
-plt.title('Kvalitātes pieaugums pa refleksijas iterācijām (dilstošā atdeve)', fontsize=14, pad=15)
-plt.xlabel('Lielais valodas modelis', fontsize=12)
-plt.ylabel('Kvalitātes uzlabojums (procentpunkti)', fontsize=12)
+plt.title('Kvalitātes pieaugums pa pašrefleksijas iterācijām (dilstošā atdeve)', fontsize=16, fontweight='bold', pad=15)
+plt.xlabel('Lielais valodas modelis', fontsize=14)
+plt.ylabel('Kvalitātes uzlabojums (%)', fontsize=14)
 plt.axhline(y=0, color='gray', linestyle='--', linewidth=0.8)
+
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
 
 for p in barplot4.patches:
     height = p.get_height()
@@ -269,9 +283,9 @@ for p in barplot4.patches:
                        ha='center', va='bottom' if height > 0 else 'top',
                        xytext=(0, 3 if height > 0 else -3),
                        textcoords='offset points',
-                       fontsize=9, fontweight='bold')
+                       fontsize=11, fontweight='bold')
 
-plt.legend(title='Pāreja', loc='upper right')
+plt.legend(title='Refleksijas pāreja', loc='upper right', fontsize=12, title_fontsize=13)
 plt.tight_layout()
 plt.savefig(os.path.join(OUTPUT_DIR, '04_delta_uzlabojums.png'))
 plt.close()
@@ -1165,3 +1179,127 @@ plt.close()
 print("Generated: 25_paired_comparison.png")
 
 print(f"\nAll charts saved to: {OUTPUT_DIR}")
+
+# =============================================================================
+# Chart 26: Delta chart with HITL comparison
+# Similar to chart 04 but grouped by HITL status instead of delta type
+# Shows total improvement from reflections (0→2) for each model with/without HITL
+# =============================================================================
+plt.figure(figsize=(12, 7))
+
+# Calculate total improvement (0→2) for each model and HITL status
+hitl_delta_data = []
+for model in modeli:
+    for hitl in hitl_opcijas:
+        scores = df[(df['Modelis'] == model) & (df['HITL'] == hitl)].sort_values('Iterācija')['Kvalitāte'].values
+        total_improvement = scores[2] - scores[0]
+        hitl_delta_data.append({
+            'Modelis': model,
+            'HITL': hitl,
+            'Uzlabojums': total_improvement
+        })
+
+hitl_delta_df = pd.DataFrame(hitl_delta_data)
+
+# Rename HITL values for better academic Latvian
+hitl_delta_df['HITL'] = hitl_delta_df['HITL'].replace({
+    'Bez HITL': 'Bez cilvēka iesaistes',
+    'Ar HITL': 'Ar cilvēka iesaisti'
+})
+
+barplot26 = sns.barplot(
+    data=hitl_delta_df,
+    x='Modelis',
+    y='Uzlabojums',
+    hue='HITL',
+    palette=['#66c2a5', '#fc8d62'],
+    errorbar=None
+)
+
+plt.title('Kvalitātes pieaugums no pašrefleksijas iterācijām\natkarībā no cilvēka iesaistes', fontsize=16, pad=15, fontweight='bold')
+plt.xlabel('Lielais valodas modelis', fontsize=14)
+plt.ylabel('Kvalitātes uzlabojums (%)', fontsize=14)
+plt.axhline(y=0, color='gray', linestyle='--', linewidth=0.8)
+
+# Larger tick labels
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+
+for p in barplot26.patches:
+    height = p.get_height()
+    if height != 0:
+        barplot26.annotate(format(height, '.2f'),
+                       (p.get_x() + p.get_width() / 2., height),
+                       ha='center', va='bottom' if height > 0 else 'top',
+                       xytext=(0, 3 if height > 0 else -3),
+                       textcoords='offset points',
+                       fontsize=11, fontweight='bold')
+
+plt.legend(title='Cilvēka iesaiste (HITL)', loc='upper right', fontsize=12, title_fontsize=13)
+plt.tight_layout()
+plt.savefig(os.path.join(OUTPUT_DIR, '26_delta_hitl.png'))
+plt.close()
+print("Generated: 26_delta_hitl.png")
+
+# =============================================================================
+# Chart 27 & 28: Delta charts for each HITL condition (same layout as 04)
+# Separate charts showing Delta-1 and Delta-2 for without/with HITL
+# =============================================================================
+hitl_config = {
+    'Bez HITL': {
+        'title': 'Bez cilvēka iesaistes',
+        'filename': '27_delta_bez_hitl.png'
+    },
+    'Ar HITL': {
+        'title': 'Ar cilvēka iesaisti',
+        'filename': '28_delta_ar_hitl.png'
+    }
+}
+
+for hitl, config in hitl_config.items():
+    plt.figure(figsize=(12, 7))
+
+    # Calculate deltas for this HITL condition
+    delta_data_hitl = []
+    for model in modeli:
+        scores = df[(df['Modelis'] == model) & (df['HITL'] == hitl)].sort_values('Iterācija')['Kvalitāte'].values
+        delta1 = scores[1] - scores[0]
+        delta2 = scores[2] - scores[1]
+        delta_data_hitl.append({'Modelis': model, 'Delta': '1. pāreja (0→1)', 'Uzlabojums': delta1})
+        delta_data_hitl.append({'Modelis': model, 'Delta': '2. pāreja (1→2)', 'Uzlabojums': delta2})
+
+    delta_df_hitl = pd.DataFrame(delta_data_hitl)
+
+    barplot_hitl = sns.barplot(
+        data=delta_df_hitl,
+        x='Modelis',
+        y='Uzlabojums',
+        hue='Delta',
+        palette='Set2',
+        errorbar=None
+    )
+
+    plt.title(f'Kvalitātes pieaugums pa pašrefleksijas iterācijām (dilstošā atdeve)\n{config["title"]}',
+              fontsize=16, fontweight='bold', pad=15)
+    plt.xlabel('Lielais valodas modelis', fontsize=14)
+    plt.ylabel('Kvalitātes uzlabojums (%)', fontsize=14)
+    plt.axhline(y=0, color='gray', linestyle='--', linewidth=0.8)
+
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
+
+    for p in barplot_hitl.patches:
+        height = p.get_height()
+        if height != 0:
+            barplot_hitl.annotate(format(height, '.2f'),
+                           (p.get_x() + p.get_width() / 2., height),
+                           ha='center', va='bottom' if height > 0 else 'top',
+                           xytext=(0, 3 if height > 0 else -3),
+                           textcoords='offset points',
+                           fontsize=11, fontweight='bold')
+
+    plt.legend(title='Refleksijas pāreja', loc='upper right', fontsize=12, title_fontsize=13)
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_DIR, config['filename']))
+    plt.close()
+    print(f"Generated: {config['filename']}")

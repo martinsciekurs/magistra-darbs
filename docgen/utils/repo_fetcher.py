@@ -46,7 +46,7 @@ def fetch_repo(source: str, commit: str | None = None) -> tuple[Path, str]:
         shutil.rmtree(target)
     target.parent.mkdir(parents=True, exist_ok=True)
 
-    from utils.logger import step, success, dim
+    from docgen.utils.logger import step, success, dim
     step("Fetching repository")
 
     # If commit is specified, we need full history to checkout that commit

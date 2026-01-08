@@ -2230,7 +2230,7 @@ def _generate_dynamic_synthesis_with_reflection(
         for slug in missing_slugs:
             toc_item = next((s for s in confirmed_toc if s.get("slug") == slug), None)
             if toc_item:
-                from llm.schemas import DynamicSection
+                from docgen.llm.schemas import DynamicSection
                 synthesis.sections.append(DynamicSection(
                     slug=slug,
                     title=toc_item.get("title", slug.replace("-", " ").title()),

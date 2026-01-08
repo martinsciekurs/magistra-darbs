@@ -7,9 +7,9 @@ Generate documentation for repositories using static analysis and LLM.
 ```
 DocGen/
 ├── docgen/              # Core documentation generation package
+│   └── tests/           # Test suite
 ├── web/                 # Web interface (FastAPI + React)
-├── eval/                # Evaluation & benchmarking tools
-└── tests/               # Test suite
+└── eval/                # Evaluation & benchmarking tools
 ```
 
 ## Quick Start

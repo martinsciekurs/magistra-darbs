@@ -118,6 +118,16 @@ START → analyze_repo → evaluate_repo → [hitl_feedback] → document_functi
     └── functions/
 ```
 
+## Testing
+
+```bash
+# Run all tests
+pytest docgen/tests/
+
+# Run with verbose output
+pytest docgen/tests/ -v
+```
+
 ## Configuration
 
 Environment variables (`.env`):

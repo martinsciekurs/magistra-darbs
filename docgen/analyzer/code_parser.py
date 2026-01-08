@@ -12,7 +12,7 @@ def load_query(language_name: str) -> str:
     if language_name not in QUERY_FILES:
         raise ValueError(f"Language {language_name} is not supported.")
     try:
-        return files("analyzer.queries").joinpath(QUERY_FILES[language_name]).read_text()
+        return files("docgen.analyzer.queries").joinpath(QUERY_FILES[language_name]).read_text()
     except Exception as e:
         raise RuntimeError(f"Could not load query file for {language_name}") from e
 

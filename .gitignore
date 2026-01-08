@@ -3,8 +3,6 @@
 venv/
 env/
 .env
-.env.local
-.env.*
 
 # IDE
 .idea/
@@ -34,16 +32,7 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
-# Logs
-*.log
-graphrag.log
-
-# Generated docs (uncomment to ignore)
-#.docs/
-
 # OS
 .DS_Store
 Thumbs.db
 tmp
-
-CLAUDE.md
